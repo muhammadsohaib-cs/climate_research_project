@@ -9,8 +9,12 @@ import climateData from './data/climate.json';
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('historical');
+  const [selectedLocation, setSelectedLocation] = useState('National');
 
-  const { historical, forecast, metrics } = climateData;
+  // Ensure data exists for safety
+  const locationData = climateData.data[selectedLocation as keyof typeof climateData.data] || climateData.data['National'];
+  const { historical, forecast, metrics } = locationData;
+  const locations = climateData.locations;
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -48,14 +52,32 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="text-sm text-slate-400">Max Temp Trend</p>
-                <p className="text-2xl font-bold text-slate-100">+{metrics.maxTrendPerDecade}°C <span className="text-sm font-normal text-slate-500">/ decade</span></p>
+                <p className="text-2xl font-bold text-slate-100">
+                  {metrics.maxTrendPerDecade > 0 ? '+' : ''}{metrics.maxTrendPerDecade}°C 
+                  <span className="text-sm font-normal text-slate-500"> / decade</span>
+                </p>
               </div>
             </div>
           </div>
         </header>
 
-        {/* Tab Navigation */}
-        <div className="flex gap-2 p-1 bg-white/5 border border-white/10 rounded-lg w-fit">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+          {/* Location Selector */}
+          <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-2 rounded-lg backdrop-blur-md">
+            <label className="text-slate-400 font-medium px-2">Location:</label>
+            <select 
+              value={selectedLocation} 
+              onChange={(e) => setSelectedLocation(e.target.value)}
+              className="bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block p-2"
+            >
+              {locations.map((loc: string) => (
+                <option key={loc} value={loc}>{loc === 'National' ? 'National Average' : loc}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Tab Navigation */}
+          <div className="flex gap-2 p-1 bg-white/5 border border-white/10 rounded-lg w-fit">
           <button 
             onClick={() => setActiveTab('historical')}
             className={`px-4 py-2 rounded-md transition-all ${activeTab === 'historical' ? 'bg-blue-500/20 text-blue-400 font-medium' : 'text-slate-400 hover:text-slate-200'}`}
@@ -74,6 +96,7 @@ export default function Dashboard() {
           >
             Machine Learning Forecast
           </button>
+        </div>
         </div>
 
         {/* Content Area */}

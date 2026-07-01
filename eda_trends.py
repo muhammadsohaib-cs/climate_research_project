@@ -26,6 +26,10 @@ def run_eda(csv_path):
     annual_precip_sum = df[precip_cols].resample('YE').sum()
     annual_mean['National_Precip'] = annual_precip_sum.mean(axis=1)
     
+    # Update individual precipitation columns with their sum instead of mean
+    for c in precip_cols:
+        annual_mean[c] = annual_precip_sum[c]
+    
     # Plot National Temperatures (Trend over time)
     plt.figure(figsize=(12, 6))
     plt.plot(annual_mean.index, annual_mean['National_MaxTemp'], label='Average Max Temp', alpha=0.5)
