@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { 
-  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine 
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Cell 
 } from 'recharts';
 import { TrendingUp, Thermometer, CloudRain, AlertTriangle } from 'lucide-react';
 import climateData from './data/climate.json';
@@ -13,7 +13,7 @@ export default function Dashboard() {
 
   // Ensure data exists for safety
   const locationData = climateData.data[selectedLocation as keyof typeof climateData.data] || climateData.data['National'];
-  const { historical, forecast, metrics } = locationData;
+  const { historical, forecast, metrics } = locationData as any;
   const locations = climateData.locations;
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -133,8 +133,8 @@ export default function Dashboard() {
                     <ReferenceLine y={0} stroke="#cbd5e1" />
                     <Bar dataKey="anomaly" name="Anomaly">
                       {
-                        historical.map((entry, index) => (
-                          <cell key={`cell-${index}`} fill={entry.anomaly > 0 ? '#ef4444' : '#3b82f6'} />
+                        historical.map((entry: any, index: number) => (
+                          <Cell key={`cell-${index}`} fill={entry.anomaly > 0 ? '#ef4444' : '#3b82f6'} />
                         ))
                       }
                     </Bar>
