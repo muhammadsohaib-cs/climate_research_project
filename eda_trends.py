@@ -52,14 +52,6 @@ def run_eda(csv_path):
     print(f"Saved temperature trends plot to {temp_plot_path}")
     plt.close()
     
-
-
-
-
-
-
-
-    
     # Temperature Anomalies
     # Baseline 1961-1990
     baseline_max = annual_mean.loc['1961-01-01':'1990-12-31', 'National_MaxTemp'].mean()
