@@ -7,30 +7,33 @@ import {
 import { TrendingUp, Thermometer, CloudRain, AlertTriangle } from 'lucide-react';
 import climateData from './data/climate.json';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-slate-900 border border-slate-700 p-3 rounded-lg shadow-xl">
+        <p className="text-slate-300 font-semibold mb-2">{label}</p>
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+        {payload.map((entry: any, index: number) => (
+          <p key={index} style={{ color: entry.color }} className="text-sm">
+            {entry.name}: {entry.value}°C
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('historical');
   const [selectedLocation, setSelectedLocation] = useState('National');
 
   // Ensure data exists for safety
   const locationData = climateData.data[selectedLocation as keyof typeof climateData.data] || climateData.data['National'];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { historical, forecast, metrics } = locationData as any;
   const locations = climateData.locations;
-
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-slate-900 border border-slate-700 p-3 rounded-lg shadow-xl">
-          <p className="text-slate-300 font-semibold mb-2">{label}</p>
-          {payload.map((entry: any, index: number) => (
-            <p key={index} style={{ color: entry.color }} className="text-sm">
-              {entry.name}: {entry.value}°C
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans p-6">
@@ -42,7 +45,7 @@ export default function Dashboard() {
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
               Climate Change Dashboard
             </h1>
-            <p className="text-slate-400 mt-2">Analysis of Pakistan's weather stations (1961 - 2037)</p>
+            <p className="text-slate-400 mt-2">Analysis of Pakistan&apos;s weather stations (1961 - 2037)</p>
           </div>
           
           <div className="flex gap-4">
@@ -133,6 +136,7 @@ export default function Dashboard() {
                     <ReferenceLine y={0} stroke="#cbd5e1" />
                     <Bar dataKey="anomaly" name="Anomaly">
                       {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         historical.map((entry: any, index: number) => (
                           <Cell key={`cell-${index}`} fill={entry.anomaly > 0 ? '#ef4444' : '#3b82f6'} />
                         ))
