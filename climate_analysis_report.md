@@ -7,17 +7,18 @@ This report outlines the methodology, data pipelines, data cleaning methods, exp
 The raw data is sourced from an Excel dataset (`journal.pone.0271626.s001.xlsx`) containing daily climate records across 11 stations (Astore, Bunji, Chilas, Chitral, Darosh, Dir, Gilgit, Gupis, Quetta, Skardu, Zhob).
 
 **Data Cleaning Pipeline (`data_prep.py`):**
-- **Data Ingestion:** Loaded the raw Excel file, skipping irrelevant header rows.
+- **Data Ingestion:** Loaded the raw Excel file, targeting only `Zone-01` to isolate the 11 northern stations of interest.
 - **Column Standardization:** Assigned structured column names for MaxTemp, MinTemp, and Precipitation across all 11 stations.
 - **Handling Missing & Invalid Data:** 
   - Dropped redundant aggregate columns and empty columns.
   - Replaced invalid text entries (`***` and `----`) with missing values (`NaN`).
   - Dropped rows with missing Year, Month, or Day values.
-- **Date Standardization:** Constructed a proper Datetime index from the numeric Year, Month, and Day columns, effectively filtering out artificially padded invalid dates (e.g., Feb 30).
+- **Station Filtering:** Filtered out stations with >15% missing data to ensure high baseline data quality. This successfully dropped **Chitral** (100% missing data) and **Dir** (17.9% missing data, lacking baseline coverage for 1961–1967).
+- **Date Standardization:** Constructed a proper Datetime index from the numeric Year, Month, and Day columns, filtering out padded invalid dates (e.g., Feb 30).
 - **Imputation Strategy:**
   - Imputed missing temperature and precipitation values using **time-based interpolation**.
-  - Applied backward fill (`bfill`) and forward fill (`ffill`) to handle any remaining missing values at the extremities of the dataset.
-- The finalized, cleaned dataset was exported as `cleaned_climate_data.csv`.
+  - Applied forward fill (`ffill`) to handle remaining missing values at the end of the time series. Backward fill (`bfill`) was explicitly **removed** to prevent introducing artificial flat temperature plateaus that distort historical trends.
+- The finalized, cleaned dataset containing the 9 stations was exported as `cleaned_climate_data.csv`.
 
 ## 3. Exploratory Data Analysis (EDA)
 The cleaned daily data was aggregated into annual metrics to better observe macro-trends (`eda_trends.py`):
@@ -38,12 +39,12 @@ To quantify historical trends and project future climate scenarios, Machine Lear
 ## 5. Results and Conclusions
 
 **Trend Quantification (Historical Analysis):**
-- **Maximum Temperature Trend:** Increasing at a rate of **0.292 °C per decade**.
-- **Minimum Temperature Trend:** Decreasing slightly at a rate of **-0.041 °C per decade**.
+- **Maximum Temperature Trend:** Increasing at a rate of **0.191 °C per decade**.
+- **Minimum Temperature Trend:** Decreasing at a rate of **-0.110 °C per decade**.
 
 **Forecast Results (Projected to the Year 2037):**
-- **Projected Maximum Temperature (2037):** **23.40 °C**
-- **Projected Minimum Temperature (2037):** **8.13 °C**
+- **Projected Maximum Temperature (2037):** **22.99 °C**
+- **Projected Minimum Temperature (2037):** **8.03 °C**
 
 **Conclusions:**
-The analysis reveals a significant warming trend in the maximum temperatures over the observed historical period, increasing at a concerning rate of nearly 0.3 °C per decade. While the minimum temperatures show a slight cooling trend, the substantial and consistent rise in maximum temperatures suggests an overall increase in thermal extremes. The linear regression forecast predicts that average national maximum temperatures could reach 23.40 °C by 2037, indicating a continued and pressing trajectory of climate warming. This highlights the necessity for continued environmental monitoring and the development of proactive climate adaptation strategies for the region.
+The analysis reveals a steady warming trend in the maximum temperatures over the observed historical period across the 9 northern stations (with Chitral and Dir dropped due to insufficient baseline coverage), increasing at a rate of nearly 0.2 °C per decade. Meanwhile, the minimum temperatures show a cooling trend of -0.110 °C per decade, indicating an increase in diurnal temperature ranges. The linear regression forecast predicts that average national maximum temperatures could reach 22.99 °C by 2037, reflecting the persistent trajectory of climate warming in this region. This highlights the necessity for continued environmental monitoring and local climate adaptation strategies.

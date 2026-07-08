@@ -13,7 +13,7 @@ def create_json():
     df['Year'] = df['Date'].dt.year
     
     # Identify locations
-    max_cols = [c for c in df.columns if c.startswith('MaxTemp_') or c == 'National_MaxTemp']
+    max_cols = [c for c in df.columns if (c.startswith('MaxTemp_') and not c.endswith('_Anomaly')) or c == 'National_MaxTemp']
     locations = [c.replace('MaxTemp_', '').replace('National_MaxTemp', 'National') for c in max_cols]
     
     final_output = {

@@ -13,15 +13,15 @@ def run_ml_analysis(csv_path):
     df['Year'] = df.index.year
     X = df[['Year']]
     
-    # Find all locations
-    max_cols = [c for c in df.columns if c.startswith('MaxTemp_') or c == 'National_MaxTemp']
+    # Find all locations, ignoring Anomaly columns
+    max_cols = [c for c in df.columns if (c.startswith('MaxTemp_') and not c.endswith('_Anomaly')) or c == 'National_MaxTemp']
     locations = [c.replace('MaxTemp_', '').replace('National_MaxTemp', 'National') for c in max_cols]
     
     metrics = {}
     
     future_years = pd.DataFrame({'Year': np.arange(2018, 2038)})
     
-    out_dir = r"C:\Users\Laptop\.gemini\antigravity-ide\brain\5f504037-0437-4d54-96e8-5eed5b2bba91"
+    out_dir = r"C:\Users\Laptop\.gemini\antigravity-ide\brain\ccda17ad-4b78-4669-b323-f50d4be9f803"
     os.makedirs(out_dir, exist_ok=True)
     
     for loc in locations:

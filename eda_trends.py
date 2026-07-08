@@ -45,7 +45,7 @@ def run_eda(csv_path):
     plt.legend()
     plt.grid(True, alpha=0.3)
     
-    out_dir = r"C:\Users\Laptop\.gemini\antigravity-ide\brain\5f504037-0437-4d54-96e8-5eed5b2bba91"
+    out_dir = r"C:\Users\Laptop\.gemini\antigravity-ide\brain\ccda17ad-4b78-4669-b323-f50d4be9f803"
     os.makedirs(out_dir, exist_ok=True)
     temp_plot_path = os.path.join(out_dir, 'temperature_trends.png')
     plt.savefig(temp_plot_path)

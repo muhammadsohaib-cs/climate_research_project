@@ -8,6 +8,8 @@ def load_and_clean_data(file_path):
     all_dfs = []
     
     for sheet in xl.sheet_names:
+        if sheet != 'Zone-01':
+            continue
         print(f"\nProcessing {sheet}...")
         
         # Read the raw data
@@ -76,9 +78,15 @@ def load_and_clean_data(file_path):
         for col in df_raw.columns:
             df_raw[col] = pd.to_numeric(df_raw[col], errors='coerce')
             
+        # Filter for the 11 target stations from the report
+        target_stations = {'Astore', 'Bunji', 'Chilas', 'Chitral', 'Darosh', 'Dir', 'Gilgit', 'Gupis', 'Quetta', 'Skardu', 'Zhob'}
+        
         # Calculate missing data percentage for each city
         valid_cities = []
         for city in cities:
+            if city not in target_stations:
+                continue
+                
             # Check missing percentage across MaxTemp, MinTemp, Precip
             col_max = f'MaxTemp_{city}'
             col_min = f'MinTemp_{city}'
@@ -88,11 +96,12 @@ def load_and_clean_data(file_path):
             min_missing = df_raw[col_min].isna().mean() if col_min in df_raw.columns else 1.0
             precip_missing = df_raw[col_precip].isna().mean() if col_precip in df_raw.columns else 1.0
             
-            # Keep only if max missing data is <= 10%
-            if max(max_missing, min_missing, precip_missing) <= 0.10:
+            # Keep only if max missing data is <= 15%
+            # This drops Chitral (100% missing) and Dir (17.9% missing)
+            if max(max_missing, min_missing, precip_missing) <= 0.15:
                 valid_cities.append(city)
             else:
-                print(f"Dropping {city} due to >10% missing data "
+                print(f"Dropping {city} due to >15% missing data "
                       f"(Max:{max_missing:.1%}, Min:{min_missing:.1%}, Precip:{precip_missing:.1%})")
                 
         # Drop columns of invalid cities
@@ -117,7 +126,7 @@ def load_and_clean_data(file_path):
     
     print("Imputing missing values using interpolation...")
     df_clean = df_combined.interpolate(method='time')
-    df_clean.bfill(inplace=True)
+    # df_clean.bfill(inplace=True) # Removed to avoid baseline distortion from backward filling
     df_clean.ffill(inplace=True)
     
     return df_clean

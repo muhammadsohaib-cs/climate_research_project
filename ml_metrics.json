@@ -1,9 +1,21 @@
 {
+  "Astore": {
+    "max_trend_per_decade": 0.23754423296746763,
+    "min_trend_per_decade": 0.07517646409804687,
+    "forecast_2037_max": 16.003961323607605,
+    "forecast_2037_min": 3.6426219791162637
+  },
+  "Bunji": {
+    "max_trend_per_decade": 0.5716329093961007,
+    "min_trend_per_decade": 0.3773510816215841,
+    "forecast_2037_max": 25.588023138526495,
+    "forecast_2037_min": 12.636611148831221
+  },
   "Chilas": {
-    "max_trend_per_decade": 0.36247808656030656,
-    "min_trend_per_decade": 0.06232461951757615,
-    "forecast_2037_max": 27.680573783840714,
-    "forecast_2037_min": 14.604265929135195
+    "max_trend_per_decade": 0.12946853711097656,
+    "min_trend_per_decade": 0.06631651904928329,
+    "forecast_2037_max": 26.81238552692376,
+    "forecast_2037_min": 14.619139655574354
   },
   "Darosh": {
     "max_trend_per_decade": -0.17921966706367923,
@@ -23,6 +35,12 @@
     "forecast_2037_max": 20.134326429575026,
     "forecast_2037_min": 5.341464026231115
   },
+  "Quetta": {
+    "max_trend_per_decade": 0.13042264009482796,
+    "min_trend_per_decade": 0.05705468594798098,
+    "forecast_2037_max": 25.02020913830255,
+    "forecast_2037_min": 7.680126415832509
+  },
   "Skardu": {
     "max_trend_per_decade": 0.22628375369260292,
     "min_trend_per_decade": -0.312955291057175,
@@ -35,142 +53,10 @@
     "forecast_2037_max": 25.811781568041035,
     "forecast_2037_min": 9.633054565380007
   },
-  "Ghari Dupatta": {
-    "max_trend_per_decade": 0.6400103948058878,
-    "min_trend_per_decade": 0.37281292664307514,
-    "forecast_2037_max": 28.492068201531367,
-    "forecast_2037_min": 13.50807954114886
-  },
-  "Islamabad": {
-    "max_trend_per_decade": -0.14241680999225748,
-    "min_trend_per_decade": -0.12578598433458948,
-    "forecast_2037_max": 27.798051801308613,
-    "forecast_2037_min": 13.571570468218862
-  },
-  "Kakul": {
-    "max_trend_per_decade": 0.013914289438671755,
-    "min_trend_per_decade": -0.6728994830061663,
-    "forecast_2037_max": 22.942938057214135,
-    "forecast_2037_min": 7.46490757539658
-  },
-  "Murree": {
-    "max_trend_per_decade": 0.1608814590317796,
-    "min_trend_per_decade": -0.21322299043075055,
-    "forecast_2037_max": 18.06968438476956,
-    "forecast_2037_min": 7.492751946325072
-  },
-  "Muzaffarabad": {
-    "max_trend_per_decade": 0.0712980845451269,
-    "min_trend_per_decade": -0.08722135445940013,
-    "forecast_2037_max": 27.885638822107737,
-    "forecast_2037_min": 13.104667291560265
-  },
-  "Panjgur": {
-    "max_trend_per_decade": -0.43374429088665484,
-    "min_trend_per_decade": -0.451896680181244,
-    "forecast_2037_max": 27.47588854810533,
-    "forecast_2037_min": 12.210199066120708
-  },
-  "Dalbandin": {
-    "max_trend_per_decade": -0.20192734590774764,
-    "min_trend_per_decade": -0.4860446661887607,
-    "forecast_2037_max": 30.097850121097125,
-    "forecast_2037_min": 10.8298685435675
-  },
-  "Nokkundi": {
-    "max_trend_per_decade": -0.2856537655492097,
-    "min_trend_per_decade": -0.35067604330133173,
-    "forecast_2037_max": 30.61977525074404,
-    "forecast_2037_min": 14.841782056765794
-  },
-  "Chhor": {
-    "max_trend_per_decade": -0.012318898601233362,
-    "min_trend_per_decade": -0.2450596908904225,
-    "forecast_2037_max": 34.734980352829524,
-    "forecast_2037_min": 16.4760378942375
-  },
-  "Hyderabad": {
-    "max_trend_per_decade": 0.03830467915003264,
-    "min_trend_per_decade": -0.23903825130853792,
-    "forecast_2037_max": 33.61860148176751,
-    "forecast_2037_min": 19.147501073422234
-  },
-  "Jaccobabad": {
-    "max_trend_per_decade": -0.19885201364824925,
-    "min_trend_per_decade": -0.16386034521026202,
-    "forecast_2037_max": 32.6903022391189,
-    "forecast_2037_min": 18.79300985951341
-  },
-  "Karachi": {
-    "max_trend_per_decade": 0.20304982786104397,
-    "min_trend_per_decade": -0.07133855102587353,
-    "forecast_2037_max": 32.79303935295282,
-    "forecast_2037_min": 20.21636082543352
-  },
-  "Nawabshah": {
-    "max_trend_per_decade": -1.1237107533889406,
-    "min_trend_per_decade": -1.6288576261103251,
-    "forecast_2037_max": 28.635420914072483,
-    "forecast_2037_min": 8.683178713345114
-  },
-  "Padidan": {
-    "max_trend_per_decade": -0.7568908013280868,
-    "min_trend_per_decade": -0.22236929318888132,
-    "forecast_2037_max": 30.322477324006428,
-    "forecast_2037_min": 16.526366158663308
-  },
-  "Bahawalnagar": {
-    "max_trend_per_decade": 0.25567240935222235,
-    "min_trend_per_decade": -0.3274750157719626,
-    "forecast_2037_max": 32.3958942812108,
-    "forecast_2037_min": 16.271861054461382
-  },
-  "Bahawalpur": {
-    "max_trend_per_decade": -0.25401662177951934,
-    "min_trend_per_decade": -0.5125986912089813,
-    "forecast_2037_max": 31.26659744382924,
-    "forecast_2037_min": 14.223067556859078
-  },
-  "D.I Khan": {
-    "max_trend_per_decade": -0.25034259771881245,
-    "min_trend_per_decade": -0.1985149148685204,
-    "forecast_2037_max": 30.142132672383696,
-    "forecast_2037_min": 15.793914565214344
-  },
-  "Faisalabad": {
-    "max_trend_per_decade": -0.25447443860069535,
-    "min_trend_per_decade": -0.22357994503885772,
-    "forecast_2037_max": 29.475104662831328,
-    "forecast_2037_min": 15.31120331334811
-  },
-  "Jhelum": {
-    "max_trend_per_decade": -0.288243714053085,
-    "min_trend_per_decade": -0.1376852648388961,
-    "forecast_2037_max": 28.97289504618913,
-    "forecast_2037_min": 16.2779767557231
-  },
-  "Khanpur": {
-    "max_trend_per_decade": -0.4955635341797842,
-    "min_trend_per_decade": -0.25768155765376516,
-    "forecast_2037_max": 30.453197692602274,
-    "forecast_2037_min": 15.304446248752036
-  },
-  "Mianwali": {
-    "max_trend_per_decade": -0.970448993192915,
-    "min_trend_per_decade": -0.1807500338734894,
-    "forecast_2037_max": 26.3259728842082,
-    "forecast_2037_min": 17.099872526698505
-  },
   "National": {
-    "max_trend_per_decade": -0.12349559028381156,
-    "min_trend_per_decade": -0.2934596574010459,
-    "forecast_2037_max": 28.00542536917733,
-    "forecast_2037_min": 13.015400764212714
-  },
-  "Anomaly": {
-    "max_trend_per_decade": -0.12349559028381146,
-    "min_trend_per_decade": -0.29345965740104585,
-    "forecast_2037_max": -0.6198350125631613,
-    "forecast_2037_min": -1.6476454970740946
+    "max_trend_per_decade": 0.1914804106613624,
+    "min_trend_per_decade": -0.11000945132363175,
+    "forecast_2037_max": 22.991839501743804,
+    "forecast_2037_min": 8.025173015860904
   }
 }

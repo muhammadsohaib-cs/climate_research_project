@@ -203,7 +203,7 @@ export default function Dashboard() {
                   Using machine learning regression models, we projected the historical patterns into the future (2018 - 2037).
                 </p>
                 <p>
-                  The dashed orange line represents the forecasted maximum temperatures. The model predicts a continuation of the +0.292°C per decade trend.
+                  The dashed orange line represents the forecasted maximum temperatures. The model predicts a continuation of the {metrics.maxTrendPerDecade > 0 ? '+' : ''}{metrics.maxTrendPerDecade}°C per decade trend.
                 </p>
                 <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
                   <p className="text-emerald-300 font-medium">If this trend holds, by 2037 average maximum temperatures will routinely sit nearly 1°C higher than the 1961 baseline.</p>
