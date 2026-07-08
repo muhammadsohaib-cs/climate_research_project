@@ -12,16 +12,22 @@
     "forecast_2037_min": 12.636611148831221
   },
   "Chilas": {
-    "max_trend_per_decade": 0.12946853711097656,
-    "min_trend_per_decade": 0.06631651904928329,
-    "forecast_2037_max": 26.81238552692376,
-    "forecast_2037_min": 14.619139655574354
+    "max_trend_per_decade": 0.36247808656030656,
+    "min_trend_per_decade": 0.06232461951757615,
+    "forecast_2037_max": 27.680573783840714,
+    "forecast_2037_min": 14.604265929135195
   },
   "Darosh": {
     "max_trend_per_decade": -0.17921966706367923,
     "min_trend_per_decade": -0.5537703161436183,
     "forecast_2037_max": 22.84823288817642,
     "forecast_2037_min": 8.081170285113188
+  },
+  "Dir": {
+    "max_trend_per_decade": 1.032565098345088,
+    "min_trend_per_decade": 0.5833302335677847,
+    "forecast_2037_max": 26.44630802638696,
+    "forecast_2037_min": 9.117189661649633
   },
   "Gilgit": {
     "max_trend_per_decade": 0.20286802509142549,
@@ -54,9 +60,9 @@
     "forecast_2037_min": 9.633054565380007
   },
   "National": {
-    "max_trend_per_decade": 0.1914804106613624,
-    "min_trend_per_decade": -0.11000945132363175,
-    "forecast_2037_max": 22.991839501743804,
-    "forecast_2037_min": 8.025173015860904
+    "max_trend_per_decade": 0.2923257377783002,
+    "min_trend_per_decade": -0.04067548283449004,
+    "forecast_2037_max": 23.399647505973128,
+    "forecast_2037_min": 8.134374680439779
   }
 }

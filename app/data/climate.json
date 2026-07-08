@@ -3,7 +3,9 @@
     "Astore",
     "Bunji",
     "Chilas",
+    "Chitral",
     "Darosh",
+    "Dir",
     "Gilgit",
     "Gupis",
     "Quetta",
@@ -18,14 +20,14 @@
           "year": 1961,
           "maxTemp": 15.85,
           "minTemp": 3.74,
-          "precip": 0.0,
+          "precip": 1854.2,
           "anomaly": 1.38
         },
         {
           "year": 1962,
           "maxTemp": 2.22,
           "minTemp": -8.33,
-          "precip": 309.88,
+          "precip": 314.96,
           "anomaly": -12.25
         },
         {
@@ -1968,339 +1970,339 @@
       "historical": [
         {
           "year": 1961,
-          "maxTemp": null,
+          "maxTemp": 12.22,
           "minTemp": 14.35,
           "precip": 77.98,
-          "anomaly": null
+          "anomaly": -13.39
         },
         {
           "year": 1962,
           "maxTemp": 26.47,
           "minTemp": 13.76,
           "precip": 136.65,
-          "anomaly": 0.4
+          "anomaly": 0.86
         },
         {
           "year": 1963,
           "maxTemp": 27.23,
           "minTemp": 14.13,
           "precip": 133.86,
-          "anomaly": 1.16
+          "anomaly": 1.62
         },
         {
           "year": 1964,
           "maxTemp": 25.87,
           "minTemp": 13.68,
           "precip": 180.34,
-          "anomaly": -0.2
+          "anomaly": 0.26
         },
         {
           "year": 1965,
           "maxTemp": 25.88,
           "minTemp": 13.77,
           "precip": 154.94,
-          "anomaly": -0.19
+          "anomaly": 0.27
         },
         {
           "year": 1966,
           "maxTemp": 25.54,
           "minTemp": 13.41,
           "precip": 214.38,
-          "anomaly": -0.53
+          "anomaly": -0.07
         },
         {
           "year": 1967,
           "maxTemp": 25.95,
           "minTemp": 13.29,
           "precip": 213.87,
-          "anomaly": -0.12
+          "anomaly": 0.34
         },
         {
           "year": 1968,
           "maxTemp": 26.19,
           "minTemp": 14.0,
           "precip": 141.99,
-          "anomaly": 0.12
+          "anomaly": 0.58
         },
         {
           "year": 1969,
           "maxTemp": 26.89,
           "minTemp": 14.34,
           "precip": 74.3,
-          "anomaly": 0.82
+          "anomaly": 1.28
         },
         {
           "year": 1970,
           "maxTemp": 27.39,
           "minTemp": 14.6,
           "precip": 189.48,
-          "anomaly": 1.32
+          "anomaly": 1.78
         },
         {
           "year": 1971,
           "maxTemp": 27.77,
           "minTemp": 14.85,
           "precip": 79.25,
-          "anomaly": 1.7
+          "anomaly": 2.16
         },
         {
           "year": 1972,
           "maxTemp": 25.54,
           "minTemp": 13.24,
           "precip": 216.66,
-          "anomaly": -0.53
+          "anomaly": -0.07
         },
         {
           "year": 1973,
           "maxTemp": 27.1,
           "minTemp": 14.45,
           "precip": 228.85,
-          "anomaly": 1.03
+          "anomaly": 1.49
         },
         {
           "year": 1974,
           "maxTemp": 12.44,
           "minTemp": 13.88,
           "precip": 183.13,
-          "anomaly": -13.63
+          "anomaly": -13.17
         },
         {
           "year": 1975,
           "maxTemp": 26.06,
           "minTemp": 14.6,
           "precip": 1470.03,
-          "anomaly": -0.01
+          "anomaly": 0.45
         },
         {
           "year": 1976,
           "maxTemp": 26.67,
           "minTemp": 14.3,
           "precip": 59.1,
-          "anomaly": 0.6
+          "anomaly": 1.06
         },
         {
           "year": 1977,
           "maxTemp": 27.73,
           "minTemp": 15.44,
           "precip": 24.5,
-          "anomaly": 1.66
+          "anomaly": 2.12
         },
         {
           "year": 1978,
           "maxTemp": 26.72,
           "minTemp": 14.76,
           "precip": 53.1,
-          "anomaly": 0.65
+          "anomaly": 1.11
         },
         {
           "year": 1979,
           "maxTemp": 26.66,
           "minTemp": 14.5,
           "precip": 25.1,
-          "anomaly": 0.59
+          "anomaly": 1.05
         },
         {
           "year": 1980,
           "maxTemp": 27.29,
           "minTemp": 14.86,
           "precip": 158.4,
-          "anomaly": 1.22
+          "anomaly": 1.68
         },
         {
           "year": 1981,
           "maxTemp": 26.56,
           "minTemp": 14.21,
           "precip": 350.75,
-          "anomaly": 0.49
+          "anomaly": 0.95
         },
         {
           "year": 1982,
           "maxTemp": 26.39,
           "minTemp": 14.63,
           "precip": 106.5,
-          "anomaly": 0.32
+          "anomaly": 0.78
         },
         {
           "year": 1983,
           "maxTemp": 26.99,
           "minTemp": 14.19,
           "precip": 58.65,
-          "anomaly": 0.92
+          "anomaly": 1.38
         },
         {
           "year": 1984,
           "maxTemp": 26.54,
           "minTemp": 14.03,
           "precip": 167.4,
-          "anomaly": 0.47
+          "anomaly": 0.93
         },
         {
           "year": 1985,
           "maxTemp": 27.36,
           "minTemp": 14.81,
           "precip": 141.05,
-          "anomaly": 1.29
+          "anomaly": 1.75
         },
         {
           "year": 1986,
           "maxTemp": 25.6,
           "minTemp": 13.63,
           "precip": 266.5,
-          "anomaly": -0.47
+          "anomaly": -0.01
         },
         {
           "year": 1987,
           "maxTemp": 26.01,
           "minTemp": 13.28,
           "precip": 207.75,
-          "anomaly": -0.06
+          "anomaly": 0.4
         },
         {
           "year": 1988,
           "maxTemp": 27.15,
           "minTemp": 14.32,
           "precip": 127.45,
-          "anomaly": 1.08
+          "anomaly": 1.54
         },
         {
           "year": 1989,
           "maxTemp": 25.08,
           "minTemp": 13.14,
           "precip": 86.3,
-          "anomaly": -0.99
+          "anomaly": -0.53
         },
         {
           "year": 1990,
           "maxTemp": 26.94,
           "minTemp": 15.58,
           "precip": 85.2,
-          "anomaly": 0.87
+          "anomaly": 1.33
         },
         {
           "year": 1991,
           "maxTemp": 25.14,
           "minTemp": 14.41,
           "precip": 121.1,
-          "anomaly": -0.93
+          "anomaly": -0.47
         },
         {
           "year": 1992,
           "maxTemp": 24.66,
           "minTemp": 13.77,
           "precip": 312.2,
-          "anomaly": -1.41
+          "anomaly": -0.95
         },
         {
           "year": 1993,
           "maxTemp": 25.78,
           "minTemp": 14.41,
           "precip": 193.4,
-          "anomaly": -0.29
+          "anomaly": 0.17
         },
         {
           "year": 1994,
           "maxTemp": 25.89,
           "minTemp": 14.79,
           "precip": 261.4,
-          "anomaly": -0.18
+          "anomaly": 0.28
         },
         {
           "year": 1995,
           "maxTemp": 25.69,
           "minTemp": 14.56,
           "precip": 145.9,
-          "anomaly": -0.38
+          "anomaly": 0.08
         },
         {
           "year": 1996,
           "maxTemp": 25.22,
           "minTemp": 13.75,
           "precip": 202.0,
-          "anomaly": -0.85
+          "anomaly": -0.39
         },
         {
           "year": 1997,
           "maxTemp": 26.51,
           "minTemp": 14.97,
           "precip": 186.7,
-          "anomaly": 0.44
+          "anomaly": 0.9
         },
         {
           "year": 1998,
           "maxTemp": 26.68,
           "minTemp": 14.94,
           "precip": 206.85,
-          "anomaly": 0.61
+          "anomaly": 1.07
         },
         {
           "year": 1999,
           "maxTemp": 26.5,
           "minTemp": 15.04,
           "precip": 237.85,
-          "anomaly": 0.43
+          "anomaly": 0.89
         },
         {
           "year": 2000,
           "maxTemp": 27.37,
           "minTemp": 15.32,
           "precip": 100.6,
-          "anomaly": 1.3
+          "anomaly": 1.76
         },
         {
           "year": 2001,
           "maxTemp": 27.73,
           "minTemp": 14.19,
           "precip": 102.2,
-          "anomaly": 1.66
+          "anomaly": 2.12
         },
         {
           "year": 2002,
           "maxTemp": 26.64,
           "minTemp": 14.97,
           "precip": 152.5,
-          "anomaly": 0.57
+          "anomaly": 1.03
         },
         {
           "year": 2003,
           "maxTemp": 25.75,
           "minTemp": 14.16,
           "precip": 356.8,
-          "anomaly": -0.32
+          "anomaly": 0.14
         },
         {
           "year": 2004,
           "maxTemp": 26.71,
           "minTemp": 15.06,
           "precip": 146.05,
-          "anomaly": 0.64
+          "anomaly": 1.1
         },
         {
           "year": 2005,
           "maxTemp": 25.91,
           "minTemp": 14.33,
           "precip": 206.5,
-          "anomaly": -0.16
+          "anomaly": 0.3
         },
         {
           "year": 2006,
           "maxTemp": 27.48,
           "minTemp": 14.44,
           "precip": 597.25,
-          "anomaly": 1.41
+          "anomaly": 1.87
         },
         {
           "year": 2007,
           "maxTemp": 28.24,
           "minTemp": 14.74,
           "precip": 142.1,
-          "anomaly": 2.17
+          "anomaly": 2.63
         },
         {
           "year": 2008,
           "maxTemp": 26.67,
           "minTemp": 14.87,
           "precip": 218.8,
-          "anomaly": 0.6
+          "anomaly": 1.06
         },
         {
           "year": 2009,
@@ -2314,76 +2316,76 @@
           "maxTemp": 26.03,
           "minTemp": 12.37,
           "precip": 249.9,
-          "anomaly": -0.04
+          "anomaly": 0.42
         },
         {
           "year": 2011,
           "maxTemp": 26.57,
           "minTemp": 13.95,
           "precip": 147.8,
-          "anomaly": 0.5
+          "anomaly": 0.96
         },
         {
           "year": 2012,
           "maxTemp": 25.41,
           "minTemp": 13.74,
           "precip": 148.4,
-          "anomaly": -0.66
+          "anomaly": -0.2
         },
         {
           "year": 2013,
           "maxTemp": 26.93,
           "minTemp": 15.02,
           "precip": 127.4,
-          "anomaly": 0.86
+          "anomaly": 1.32
         },
         {
           "year": 2014,
           "maxTemp": 25.99,
           "minTemp": 14.0,
           "precip": 82.5,
-          "anomaly": -0.08
+          "anomaly": 0.38
         },
         {
           "year": 2015,
           "maxTemp": 26.25,
           "minTemp": 14.32,
           "precip": 204.9,
-          "anomaly": 0.18
+          "anomaly": 0.64
         },
         {
           "year": 2016,
           "maxTemp": 27.39,
           "minTemp": 15.28,
           "precip": 241.2,
-          "anomaly": 1.32
+          "anomaly": 1.78
         },
         {
           "year": 2017,
           "maxTemp": 27.08,
           "minTemp": 14.56,
           "precip": 294.47,
-          "anomaly": 1.01
+          "anomaly": 1.47
         },
         {
           "year": 2018,
           "maxTemp": 26.29,
           "minTemp": 13.69,
           "precip": 579.82,
-          "anomaly": 0.22
+          "anomaly": 0.68
         },
         {
           "year": 2019,
           "maxTemp": 25.21,
           "minTemp": 14.23,
           "precip": 108.67,
-          "anomaly": -0.86
+          "anomaly": -0.4
         }
       ],
       "forecast": [
         {
           "year": 1961,
-          "historicalMax": null,
+          "historicalMax": 12.22,
           "historicalMin": 14.35,
           "forecastMax": null,
           "forecastMin": null
@@ -2798,146 +2800,146 @@
           "year": 2020,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 25.22,
+          "forecastMax": 25.25,
           "forecastMin": 14.24
         },
         {
           "year": 2021,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 25.24,
+          "forecastMax": 25.28,
           "forecastMin": 14.24
         },
         {
           "year": 2022,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 25.25,
+          "forecastMax": 25.32,
           "forecastMin": 14.25
         },
         {
           "year": 2023,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 25.26,
-          "forecastMin": 14.26
+          "forecastMax": 25.35,
+          "forecastMin": 14.25
         },
         {
           "year": 2024,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 25.27,
+          "forecastMax": 25.39,
           "forecastMin": 14.26
         },
         {
           "year": 2025,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 25.29,
+          "forecastMax": 25.43,
           "forecastMin": 14.27
         },
         {
           "year": 2026,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 25.3,
-          "forecastMin": 14.28
+          "forecastMax": 25.46,
+          "forecastMin": 14.27
         },
         {
           "year": 2027,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 25.31,
+          "forecastMax": 25.5,
           "forecastMin": 14.28
         },
         {
           "year": 2028,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 25.33,
+          "forecastMax": 25.54,
           "forecastMin": 14.29
         },
         {
           "year": 2029,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 25.34,
-          "forecastMin": 14.3
+          "forecastMax": 25.57,
+          "forecastMin": 14.29
         },
         {
           "year": 2030,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 25.35,
+          "forecastMax": 25.61,
           "forecastMin": 14.3
         },
         {
           "year": 2031,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 25.37,
-          "forecastMin": 14.31
+          "forecastMax": 25.64,
+          "forecastMin": 14.3
         },
         {
           "year": 2032,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 25.38,
-          "forecastMin": 14.32
+          "forecastMax": 25.68,
+          "forecastMin": 14.31
         },
         {
           "year": 2033,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 25.39,
+          "forecastMax": 25.72,
           "forecastMin": 14.32
         },
         {
           "year": 2034,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 25.4,
-          "forecastMin": 14.33
+          "forecastMax": 25.75,
+          "forecastMin": 14.32
         },
         {
           "year": 2035,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 25.42,
-          "forecastMin": 14.34
+          "forecastMax": 25.79,
+          "forecastMin": 14.33
         },
         {
           "year": 2036,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 25.43,
+          "forecastMax": 25.83,
           "forecastMin": 14.34
         },
         {
           "year": 2037,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 25.44,
-          "forecastMin": 14.35
+          "forecastMax": 25.86,
+          "forecastMin": 14.34
         },
         {
           "year": 2038,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 25.46,
-          "forecastMin": 14.36
+          "forecastMax": 25.9,
+          "forecastMin": 14.35
         },
         {
           "year": 2039,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 25.47,
-          "forecastMin": 14.36
+          "forecastMax": 25.93,
+          "forecastMin": 14.35
         }
       ],
       "metrics": {
-        "maxTrendPerDecade": 0.129,
-        "minTrendPerDecade": 0.066
+        "maxTrendPerDecade": 0.362,
+        "minTrendPerDecade": 0.062
       }
     },
     "Darosh": {
@@ -3914,6 +3916,982 @@
       "metrics": {
         "maxTrendPerDecade": -0.179,
         "minTrendPerDecade": -0.554
+      }
+    },
+    "Dir": {
+      "historical": [
+        {
+          "year": 1961,
+          "maxTemp": 12.78,
+          "minTemp": -2.22,
+          "precip": 0.0,
+          "anomaly": -7.63
+        },
+        {
+          "year": 1962,
+          "maxTemp": 12.78,
+          "minTemp": -2.22,
+          "precip": 0.0,
+          "anomaly": -7.63
+        },
+        {
+          "year": 1963,
+          "maxTemp": 12.78,
+          "minTemp": -2.22,
+          "precip": 0.0,
+          "anomaly": -7.63
+        },
+        {
+          "year": 1964,
+          "maxTemp": 12.78,
+          "minTemp": -2.22,
+          "precip": 0.0,
+          "anomaly": -7.63
+        },
+        {
+          "year": 1965,
+          "maxTemp": 12.78,
+          "minTemp": -2.22,
+          "precip": 0.0,
+          "anomaly": -7.63
+        },
+        {
+          "year": 1966,
+          "maxTemp": 12.78,
+          "minTemp": -2.22,
+          "precip": 0.0,
+          "anomaly": -7.63
+        },
+        {
+          "year": 1967,
+          "maxTemp": 12.78,
+          "minTemp": -2.22,
+          "precip": 0.0,
+          "anomaly": -7.63
+        },
+        {
+          "year": 1968,
+          "maxTemp": 21.85,
+          "minTemp": 8.39,
+          "precip": -292.05,
+          "anomaly": 1.44
+        },
+        {
+          "year": 1969,
+          "maxTemp": 23.08,
+          "minTemp": 8.86,
+          "precip": 1018.54,
+          "anomaly": 2.67
+        },
+        {
+          "year": 1970,
+          "maxTemp": 23.23,
+          "minTemp": 9.63,
+          "precip": 920.3,
+          "anomaly": 2.82
+        },
+        {
+          "year": 1971,
+          "maxTemp": 23.84,
+          "minTemp": 9.61,
+          "precip": 875.8,
+          "anomaly": 3.43
+        },
+        {
+          "year": 1972,
+          "maxTemp": 21.72,
+          "minTemp": 8.14,
+          "precip": 1530.2,
+          "anomaly": 1.31
+        },
+        {
+          "year": 1973,
+          "maxTemp": 22.72,
+          "minTemp": 9.08,
+          "precip": 1280.9,
+          "anomaly": 2.31
+        },
+        {
+          "year": 1974,
+          "maxTemp": 22.67,
+          "minTemp": 8.03,
+          "precip": 1030.6,
+          "anomaly": 2.26
+        },
+        {
+          "year": 1975,
+          "maxTemp": 22.05,
+          "minTemp": 8.0,
+          "precip": 1304.0,
+          "anomaly": 1.64
+        },
+        {
+          "year": 1976,
+          "maxTemp": 22.62,
+          "minTemp": 8.51,
+          "precip": 1267.9,
+          "anomaly": 2.21
+        },
+        {
+          "year": 1977,
+          "maxTemp": 22.9,
+          "minTemp": 9.12,
+          "precip": 1327.1,
+          "anomaly": 2.49
+        },
+        {
+          "year": 1978,
+          "maxTemp": 22.6,
+          "minTemp": 9.21,
+          "precip": -4860.6,
+          "anomaly": 2.19
+        },
+        {
+          "year": 1979,
+          "maxTemp": 22.79,
+          "minTemp": 8.7,
+          "precip": -10995.8,
+          "anomaly": 2.38
+        },
+        {
+          "year": 1980,
+          "maxTemp": 23.32,
+          "minTemp": 8.75,
+          "precip": 1720.7,
+          "anomaly": 2.91
+        },
+        {
+          "year": 1981,
+          "maxTemp": 22.78,
+          "minTemp": 8.48,
+          "precip": 1574.15,
+          "anomaly": 2.37
+        },
+        {
+          "year": 1982,
+          "maxTemp": 21.43,
+          "minTemp": 7.04,
+          "precip": 1363.25,
+          "anomaly": 1.02
+        },
+        {
+          "year": 1983,
+          "maxTemp": 22.17,
+          "minTemp": 7.04,
+          "precip": 1467.55,
+          "anomaly": 1.76
+        },
+        {
+          "year": 1984,
+          "maxTemp": 22.35,
+          "minTemp": 7.5,
+          "precip": 1627.6,
+          "anomaly": 1.94
+        },
+        {
+          "year": 1985,
+          "maxTemp": 23.42,
+          "minTemp": 8.14,
+          "precip": 1424.6,
+          "anomaly": 3.01
+        },
+        {
+          "year": 1986,
+          "maxTemp": 22.14,
+          "minTemp": 7.3,
+          "precip": 2170.0,
+          "anomaly": 1.73
+        },
+        {
+          "year": 1987,
+          "maxTemp": 23.58,
+          "minTemp": 6.38,
+          "precip": 1821.2,
+          "anomaly": 3.17
+        },
+        {
+          "year": 1988,
+          "maxTemp": 23.7,
+          "minTemp": 6.6,
+          "precip": 1728.5,
+          "anomaly": 3.29
+        },
+        {
+          "year": 1989,
+          "maxTemp": 22.43,
+          "minTemp": 4.86,
+          "precip": 1273.85,
+          "anomaly": 2.02
+        },
+        {
+          "year": 1990,
+          "maxTemp": 23.46,
+          "minTemp": 6.3,
+          "precip": 1578.6,
+          "anomaly": 3.05
+        },
+        {
+          "year": 1991,
+          "maxTemp": 22.22,
+          "minTemp": 7.88,
+          "precip": 1863.5,
+          "anomaly": 1.81
+        },
+        {
+          "year": 1992,
+          "maxTemp": 21.93,
+          "minTemp": 8.18,
+          "precip": 1934.35,
+          "anomaly": 1.52
+        },
+        {
+          "year": 1993,
+          "maxTemp": 23.78,
+          "minTemp": 7.88,
+          "precip": 1278.3,
+          "anomaly": 3.37
+        },
+        {
+          "year": 1994,
+          "maxTemp": 22.81,
+          "minTemp": 8.41,
+          "precip": 1779.4,
+          "anomaly": 2.4
+        },
+        {
+          "year": 1995,
+          "maxTemp": 23.03,
+          "minTemp": 7.79,
+          "precip": 1536.55,
+          "anomaly": 2.62
+        },
+        {
+          "year": 1996,
+          "maxTemp": 23.92,
+          "minTemp": 7.9,
+          "precip": 1428.05,
+          "anomaly": 3.51
+        },
+        {
+          "year": 1997,
+          "maxTemp": 21.65,
+          "minTemp": 8.06,
+          "precip": 1363.95,
+          "anomaly": 1.24
+        },
+        {
+          "year": 1998,
+          "maxTemp": 23.72,
+          "minTemp": 8.27,
+          "precip": 1324.1,
+          "anomaly": 3.31
+        },
+        {
+          "year": 1999,
+          "maxTemp": 23.75,
+          "minTemp": 8.58,
+          "precip": 1536.8,
+          "anomaly": 3.34
+        },
+        {
+          "year": 2000,
+          "maxTemp": 23.81,
+          "minTemp": 8.32,
+          "precip": 1166.5,
+          "anomaly": 3.4
+        },
+        {
+          "year": 2001,
+          "maxTemp": 24.66,
+          "minTemp": 7.89,
+          "precip": 911.4,
+          "anomaly": 4.25
+        },
+        {
+          "year": 2002,
+          "maxTemp": 24.01,
+          "minTemp": 8.24,
+          "precip": 1041.0,
+          "anomaly": 3.6
+        },
+        {
+          "year": 2003,
+          "maxTemp": 23.1,
+          "minTemp": 8.2,
+          "precip": 1015.0,
+          "anomaly": 2.69
+        },
+        {
+          "year": 2004,
+          "maxTemp": 23.81,
+          "minTemp": 8.3,
+          "precip": 1302.6,
+          "anomaly": 3.4
+        },
+        {
+          "year": 2005,
+          "maxTemp": 22.8,
+          "minTemp": 8.06,
+          "precip": 1624.0,
+          "anomaly": 2.39
+        },
+        {
+          "year": 2006,
+          "maxTemp": 23.96,
+          "minTemp": 9.24,
+          "precip": 1477.9,
+          "anomaly": 3.55
+        },
+        {
+          "year": 2007,
+          "maxTemp": 24.71,
+          "minTemp": 8.4,
+          "precip": 1050.0,
+          "anomaly": 4.3
+        },
+        {
+          "year": 2008,
+          "maxTemp": 14.63,
+          "minTemp": 8.79,
+          "precip": 1302.5,
+          "anomaly": -5.78
+        },
+        {
+          "year": 2009,
+          "maxTemp": null,
+          "minTemp": null,
+          "precip": 0.0,
+          "anomaly": null
+        },
+        {
+          "year": 2010,
+          "maxTemp": 23.95,
+          "minTemp": 7.89,
+          "precip": 1565.5,
+          "anomaly": 3.54
+        },
+        {
+          "year": 2011,
+          "maxTemp": 23.62,
+          "minTemp": 8.29,
+          "precip": 1268.1,
+          "anomaly": 3.21
+        },
+        {
+          "year": 2012,
+          "maxTemp": 22.38,
+          "minTemp": 6.92,
+          "precip": 1044.1,
+          "anomaly": 1.97
+        },
+        {
+          "year": 2013,
+          "maxTemp": 23.32,
+          "minTemp": 7.63,
+          "precip": 1308.2,
+          "anomaly": 2.91
+        },
+        {
+          "year": 2014,
+          "maxTemp": 23.0,
+          "minTemp": 8.01,
+          "precip": 1239.7,
+          "anomaly": 2.59
+        },
+        {
+          "year": 2015,
+          "maxTemp": 23.28,
+          "minTemp": 6.84,
+          "precip": 1605.9,
+          "anomaly": 2.87
+        },
+        {
+          "year": 2016,
+          "maxTemp": 25.44,
+          "minTemp": 6.85,
+          "precip": 1312.5,
+          "anomaly": 5.03
+        },
+        {
+          "year": 2017,
+          "maxTemp": 24.49,
+          "minTemp": 6.71,
+          "precip": 1204.0,
+          "anomaly": 4.08
+        },
+        {
+          "year": 2018,
+          "maxTemp": 18.2,
+          "minTemp": -3.5,
+          "precip": 0.0,
+          "anomaly": -2.21
+        },
+        {
+          "year": 2019,
+          "maxTemp": 18.2,
+          "minTemp": -3.5,
+          "precip": 0.0,
+          "anomaly": -2.21
+        }
+      ],
+      "forecast": [
+        {
+          "year": 1961,
+          "historicalMax": 12.78,
+          "historicalMin": -2.22,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1962,
+          "historicalMax": 12.78,
+          "historicalMin": -2.22,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1963,
+          "historicalMax": 12.78,
+          "historicalMin": -2.22,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1964,
+          "historicalMax": 12.78,
+          "historicalMin": -2.22,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1965,
+          "historicalMax": 12.78,
+          "historicalMin": -2.22,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1966,
+          "historicalMax": 12.78,
+          "historicalMin": -2.22,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1967,
+          "historicalMax": 12.78,
+          "historicalMin": -2.22,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1968,
+          "historicalMax": 21.85,
+          "historicalMin": 8.39,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1969,
+          "historicalMax": 23.08,
+          "historicalMin": 8.86,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1970,
+          "historicalMax": 23.23,
+          "historicalMin": 9.63,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1971,
+          "historicalMax": 23.84,
+          "historicalMin": 9.61,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1972,
+          "historicalMax": 21.72,
+          "historicalMin": 8.14,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1973,
+          "historicalMax": 22.72,
+          "historicalMin": 9.08,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1974,
+          "historicalMax": 22.67,
+          "historicalMin": 8.03,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1975,
+          "historicalMax": 22.05,
+          "historicalMin": 8.0,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1976,
+          "historicalMax": 22.62,
+          "historicalMin": 8.51,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1977,
+          "historicalMax": 22.9,
+          "historicalMin": 9.12,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1978,
+          "historicalMax": 22.6,
+          "historicalMin": 9.21,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1979,
+          "historicalMax": 22.79,
+          "historicalMin": 8.7,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1980,
+          "historicalMax": 23.32,
+          "historicalMin": 8.75,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1981,
+          "historicalMax": 22.78,
+          "historicalMin": 8.48,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1982,
+          "historicalMax": 21.43,
+          "historicalMin": 7.04,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1983,
+          "historicalMax": 22.17,
+          "historicalMin": 7.04,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1984,
+          "historicalMax": 22.35,
+          "historicalMin": 7.5,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1985,
+          "historicalMax": 23.42,
+          "historicalMin": 8.14,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1986,
+          "historicalMax": 22.14,
+          "historicalMin": 7.3,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1987,
+          "historicalMax": 23.58,
+          "historicalMin": 6.38,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1988,
+          "historicalMax": 23.7,
+          "historicalMin": 6.6,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1989,
+          "historicalMax": 22.43,
+          "historicalMin": 4.86,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1990,
+          "historicalMax": 23.46,
+          "historicalMin": 6.3,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1991,
+          "historicalMax": 22.22,
+          "historicalMin": 7.88,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1992,
+          "historicalMax": 21.93,
+          "historicalMin": 8.18,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1993,
+          "historicalMax": 23.78,
+          "historicalMin": 7.88,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1994,
+          "historicalMax": 22.81,
+          "historicalMin": 8.41,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1995,
+          "historicalMax": 23.03,
+          "historicalMin": 7.79,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1996,
+          "historicalMax": 23.92,
+          "historicalMin": 7.9,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1997,
+          "historicalMax": 21.65,
+          "historicalMin": 8.06,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1998,
+          "historicalMax": 23.72,
+          "historicalMin": 8.27,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 1999,
+          "historicalMax": 23.75,
+          "historicalMin": 8.58,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 2000,
+          "historicalMax": 23.81,
+          "historicalMin": 8.32,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 2001,
+          "historicalMax": 24.66,
+          "historicalMin": 7.89,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 2002,
+          "historicalMax": 24.01,
+          "historicalMin": 8.24,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 2003,
+          "historicalMax": 23.1,
+          "historicalMin": 8.2,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 2004,
+          "historicalMax": 23.81,
+          "historicalMin": 8.3,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 2005,
+          "historicalMax": 22.8,
+          "historicalMin": 8.06,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 2006,
+          "historicalMax": 23.96,
+          "historicalMin": 9.24,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 2007,
+          "historicalMax": 24.71,
+          "historicalMin": 8.4,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 2008,
+          "historicalMax": 14.63,
+          "historicalMin": 8.79,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 2009,
+          "historicalMax": null,
+          "historicalMin": null,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 2010,
+          "historicalMax": 23.95,
+          "historicalMin": 7.89,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 2011,
+          "historicalMax": 23.62,
+          "historicalMin": 8.29,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 2012,
+          "historicalMax": 22.38,
+          "historicalMin": 6.92,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 2013,
+          "historicalMax": 23.32,
+          "historicalMin": 7.63,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 2014,
+          "historicalMax": 23.0,
+          "historicalMin": 8.01,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 2015,
+          "historicalMax": 23.28,
+          "historicalMin": 6.84,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 2016,
+          "historicalMax": 25.44,
+          "historicalMin": 6.85,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 2017,
+          "historicalMax": 24.49,
+          "historicalMin": 6.71,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 2018,
+          "historicalMax": 18.2,
+          "historicalMin": -3.5,
+          "forecastMax": null,
+          "forecastMin": null
+        },
+        {
+          "year": 2019,
+          "historicalMax": 18.2,
+          "historicalMin": -3.5,
+          "forecastMax": 18.2,
+          "forecastMin": -3.5
+        },
+        {
+          "year": 2020,
+          "historicalMax": null,
+          "historicalMin": null,
+          "forecastMax": 18.3,
+          "forecastMin": -3.44
+        },
+        {
+          "year": 2021,
+          "historicalMax": null,
+          "historicalMin": null,
+          "forecastMax": 18.41,
+          "forecastMin": -3.38
+        },
+        {
+          "year": 2022,
+          "historicalMax": null,
+          "historicalMin": null,
+          "forecastMax": 18.51,
+          "forecastMin": -3.33
+        },
+        {
+          "year": 2023,
+          "historicalMax": null,
+          "historicalMin": null,
+          "forecastMax": 18.61,
+          "forecastMin": -3.27
+        },
+        {
+          "year": 2024,
+          "historicalMax": null,
+          "historicalMin": null,
+          "forecastMax": 18.72,
+          "forecastMin": -3.21
+        },
+        {
+          "year": 2025,
+          "historicalMax": null,
+          "historicalMin": null,
+          "forecastMax": 18.82,
+          "forecastMin": -3.15
+        },
+        {
+          "year": 2026,
+          "historicalMax": null,
+          "historicalMin": null,
+          "forecastMax": 18.92,
+          "forecastMin": -3.09
+        },
+        {
+          "year": 2027,
+          "historicalMax": null,
+          "historicalMin": null,
+          "forecastMax": 19.03,
+          "forecastMin": -3.03
+        },
+        {
+          "year": 2028,
+          "historicalMax": null,
+          "historicalMin": null,
+          "forecastMax": 19.13,
+          "forecastMin": -2.98
+        },
+        {
+          "year": 2029,
+          "historicalMax": null,
+          "historicalMin": null,
+          "forecastMax": 19.23,
+          "forecastMin": -2.92
+        },
+        {
+          "year": 2030,
+          "historicalMax": null,
+          "historicalMin": null,
+          "forecastMax": 19.34,
+          "forecastMin": -2.86
+        },
+        {
+          "year": 2031,
+          "historicalMax": null,
+          "historicalMin": null,
+          "forecastMax": 19.44,
+          "forecastMin": -2.8
+        },
+        {
+          "year": 2032,
+          "historicalMax": null,
+          "historicalMin": null,
+          "forecastMax": 19.54,
+          "forecastMin": -2.74
+        },
+        {
+          "year": 2033,
+          "historicalMax": null,
+          "historicalMin": null,
+          "forecastMax": 19.65,
+          "forecastMin": -2.68
+        },
+        {
+          "year": 2034,
+          "historicalMax": null,
+          "historicalMin": null,
+          "forecastMax": 19.75,
+          "forecastMin": -2.63
+        },
+        {
+          "year": 2035,
+          "historicalMax": null,
+          "historicalMin": null,
+          "forecastMax": 19.85,
+          "forecastMin": -2.57
+        },
+        {
+          "year": 2036,
+          "historicalMax": null,
+          "historicalMin": null,
+          "forecastMax": 19.96,
+          "forecastMin": -2.51
+        },
+        {
+          "year": 2037,
+          "historicalMax": null,
+          "historicalMin": null,
+          "forecastMax": 20.06,
+          "forecastMin": -2.45
+        },
+        {
+          "year": 2038,
+          "historicalMax": null,
+          "historicalMin": null,
+          "forecastMax": 20.16,
+          "forecastMin": -2.39
+        },
+        {
+          "year": 2039,
+          "historicalMax": null,
+          "historicalMin": null,
+          "forecastMax": 20.27,
+          "forecastMin": -2.33
+        }
+      ],
+      "metrics": {
+        "maxTrendPerDecade": 1.033,
+        "minTrendPerDecade": 0.583
       }
     },
     "Gilgit": {
@@ -8800,339 +9778,339 @@
       "historical": [
         {
           "year": 1961,
-          "maxTemp": 22.0,
-          "minTemp": 9.55,
-          "precip": 160.36,
-          "anomaly": 0.31
+          "maxTemp": 20.1,
+          "minTemp": 8.37,
+          "precip": 299.77,
+          "anomaly": -1.43
         },
         {
           "year": 1962,
-          "maxTemp": 20.46,
-          "minTemp": 7.46,
-          "precip": 223.22,
-          "anomaly": -1.23
+          "maxTemp": 19.69,
+          "minTemp": 6.49,
+          "precip": 183.09,
+          "anomaly": -1.84
         },
         {
           "year": 1963,
-          "maxTemp": 22.8,
-          "minTemp": 9.35,
-          "precip": 233.96,
-          "anomaly": 1.11
+          "maxTemp": 21.8,
+          "minTemp": 8.19,
+          "precip": 191.42,
+          "anomaly": 0.27
         },
         {
           "year": 1964,
-          "maxTemp": 21.81,
-          "minTemp": 8.71,
-          "precip": 259.26,
-          "anomaly": 0.12
+          "maxTemp": 20.91,
+          "minTemp": 7.62,
+          "precip": 212.12,
+          "anomaly": -0.62
         },
         {
           "year": 1965,
-          "maxTemp": 20.14,
-          "minTemp": 8.12,
-          "precip": 290.16,
-          "anomaly": -1.55
+          "maxTemp": 19.4,
+          "minTemp": 7.08,
+          "precip": 237.41,
+          "anomaly": -2.13
         },
         {
           "year": 1966,
-          "maxTemp": 21.75,
-          "minTemp": 8.49,
-          "precip": 300.27,
-          "anomaly": 0.06
+          "maxTemp": 20.85,
+          "minTemp": 7.42,
+          "precip": 245.67,
+          "anomaly": -0.68
         },
         {
           "year": 1967,
-          "maxTemp": 21.64,
-          "minTemp": 8.97,
-          "precip": 109.69,
-          "anomaly": -0.05
+          "maxTemp": 20.76,
+          "minTemp": 7.85,
+          "precip": 89.75,
+          "anomaly": -0.77
         },
         {
           "year": 1968,
-          "maxTemp": 20.32,
-          "minTemp": 7.56,
-          "precip": 252.0,
-          "anomaly": -1.37
+          "maxTemp": 20.47,
+          "minTemp": 7.64,
+          "precip": 179.64,
+          "anomaly": -1.06
         },
         {
           "year": 1969,
-          "maxTemp": 21.35,
-          "minTemp": 8.09,
-          "precip": 250.32,
-          "anomaly": -0.34
+          "maxTemp": 21.52,
+          "minTemp": 8.17,
+          "precip": 297.4,
+          "anomaly": -0.01
         },
         {
           "year": 1970,
-          "maxTemp": 23.21,
-          "minTemp": 9.47,
-          "precip": 206.18,
-          "anomaly": 1.52
+          "maxTemp": 23.22,
+          "minTemp": 9.48,
+          "precip": 252.36,
+          "anomaly": 1.69
         },
         {
           "year": 1971,
-          "maxTemp": 22.31,
-          "minTemp": 6.81,
-          "precip": 128.0,
-          "anomaly": 0.62
+          "maxTemp": 22.46,
+          "minTemp": 7.09,
+          "precip": 184.34,
+          "anomaly": 0.93
         },
         {
           "year": 1972,
-          "maxTemp": 20.51,
-          "minTemp": 7.76,
-          "precip": -67.26,
-          "anomaly": -1.18
+          "maxTemp": 20.63,
+          "minTemp": 7.79,
+          "precip": 84.08,
+          "anomaly": -0.9
         },
         {
           "year": 1973,
-          "maxTemp": 22.53,
-          "minTemp": 10.59,
-          "precip": 317.8,
-          "anomaly": 0.84
+          "maxTemp": 22.55,
+          "minTemp": 10.44,
+          "precip": 376.47,
+          "anomaly": 1.02
         },
         {
           "year": 1974,
-          "maxTemp": 18.88,
+          "maxTemp": 19.26,
           "minTemp": 7.95,
-          "precip": 365.08,
-          "anomaly": -2.81
+          "precip": 392.39,
+          "anomaly": -2.27
         },
         {
           "year": 1975,
-          "maxTemp": 20.22,
-          "minTemp": 7.69,
-          "precip": 413.6,
-          "anomaly": -1.47
+          "maxTemp": 20.4,
+          "minTemp": 7.72,
+          "precip": 456.95,
+          "anomaly": -1.13
         },
         {
           "year": 1976,
-          "maxTemp": 22.22,
-          "minTemp": 9.22,
-          "precip": 595.05,
-          "anomaly": 0.53
+          "maxTemp": 22.26,
+          "minTemp": 9.15,
+          "precip": 602.12,
+          "anomaly": 0.73
         },
         {
           "year": 1977,
-          "maxTemp": 23.14,
-          "minTemp": 9.9,
-          "precip": -137.73,
-          "anomaly": 1.45
+          "maxTemp": 23.12,
+          "minTemp": 9.83,
+          "precip": 7.95,
+          "anomaly": 1.59
         },
         {
           "year": 1978,
-          "maxTemp": 22.56,
+          "maxTemp": 22.57,
           "minTemp": 9.23,
-          "precip": 187.15,
-          "anomaly": 0.87
+          "precip": -288.75,
+          "anomaly": 1.04
         },
         {
           "year": 1979,
-          "maxTemp": 21.62,
-          "minTemp": 8.39,
-          "precip": -2032.01,
-          "anomaly": -0.07
+          "maxTemp": 21.74,
+          "minTemp": 8.42,
+          "precip": -2662.17,
+          "anomaly": 0.21
         },
         {
           "year": 1980,
-          "maxTemp": 22.6,
-          "minTemp": 9.24,
-          "precip": 214.35,
-          "anomaly": 0.91
+          "maxTemp": 22.67,
+          "minTemp": 9.19,
+          "precip": 331.8,
+          "anomaly": 1.14
         },
         {
           "year": 1981,
-          "maxTemp": 18.3,
-          "minTemp": 7.43,
-          "precip": 310.0,
-          "anomaly": -3.39
+          "maxTemp": 18.75,
+          "minTemp": 7.53,
+          "precip": 396.74,
+          "anomaly": -2.78
         },
         {
           "year": 1982,
-          "maxTemp": 21.65,
-          "minTemp": 8.98,
-          "precip": 318.95,
-          "anomaly": -0.04
+          "maxTemp": 21.63,
+          "minTemp": 8.79,
+          "precip": 384.89,
+          "anomaly": 0.1
         },
         {
           "year": 1983,
-          "maxTemp": 22.41,
-          "minTemp": 8.65,
-          "precip": 256.14,
-          "anomaly": 0.72
+          "maxTemp": 22.38,
+          "minTemp": 8.49,
+          "precip": 342.99,
+          "anomaly": 0.85
         },
         {
           "year": 1984,
           "maxTemp": 22.4,
-          "minTemp": 8.58,
-          "precip": 235.79,
-          "anomaly": 0.71
+          "minTemp": 8.48,
+          "precip": 340.88,
+          "anomaly": 0.87
         },
         {
           "year": 1985,
-          "maxTemp": 23.04,
-          "minTemp": 8.78,
-          "precip": 211.21,
-          "anomaly": 1.35
+          "maxTemp": 23.08,
+          "minTemp": 8.71,
+          "precip": 302.32,
+          "anomaly": 1.55
         },
         {
           "year": 1986,
-          "maxTemp": 21.72,
-          "minTemp": 8.2,
-          "precip": 286.3,
-          "anomaly": 0.03
+          "maxTemp": 21.76,
+          "minTemp": 8.11,
+          "precip": 431.51,
+          "anomaly": 0.23
         },
         {
           "year": 1987,
-          "maxTemp": 22.25,
-          "minTemp": 8.63,
-          "precip": 399.8,
-          "anomaly": 0.56
+          "maxTemp": 22.39,
+          "minTemp": 8.4,
+          "precip": 492.68,
+          "anomaly": 0.86
         },
         {
           "year": 1988,
-          "maxTemp": 22.87,
-          "minTemp": 9.33,
-          "precip": 248.5,
-          "anomaly": 1.18
+          "maxTemp": 22.95,
+          "minTemp": 9.06,
+          "precip": 360.45,
+          "anomaly": 1.42
         },
         {
           "year": 1989,
-          "maxTemp": 21.36,
-          "minTemp": 7.82,
-          "precip": 255.41,
-          "anomaly": -0.33
+          "maxTemp": 21.46,
+          "minTemp": 7.53,
+          "precip": 324.78,
+          "anomaly": -0.07
         },
         {
           "year": 1990,
-          "maxTemp": 22.76,
-          "minTemp": 8.76,
-          "precip": 257.14,
-          "anomaly": 1.07
+          "maxTemp": 22.83,
+          "minTemp": 8.51,
+          "precip": 353.9,
+          "anomaly": 1.3
         },
         {
           "year": 1991,
-          "maxTemp": 22.07,
-          "minTemp": 8.74,
-          "precip": 305.33,
-          "anomaly": 0.38
+          "maxTemp": 22.09,
+          "minTemp": 8.65,
+          "precip": 419.23,
+          "anomaly": 0.56
         },
         {
           "year": 1992,
-          "maxTemp": 21.78,
-          "minTemp": 8.43,
-          "precip": 363.11,
-          "anomaly": 0.09
+          "maxTemp": 21.79,
+          "minTemp": 8.4,
+          "precip": 472.94,
+          "anomaly": 0.26
         },
         {
           "year": 1993,
-          "maxTemp": 22.43,
-          "minTemp": 8.67,
-          "precip": 300.67,
-          "anomaly": 0.74
+          "maxTemp": 22.57,
+          "minTemp": 8.59,
+          "precip": 362.21,
+          "anomaly": 1.04
         },
         {
           "year": 1994,
-          "maxTemp": 22.49,
-          "minTemp": 9.23,
-          "precip": 335.56,
-          "anomaly": 0.8
+          "maxTemp": 22.53,
+          "minTemp": 9.15,
+          "precip": 436.31,
+          "anomaly": 1.0
         },
         {
           "year": 1995,
-          "maxTemp": 22.1,
-          "minTemp": 8.41,
-          "precip": 281.21,
-          "anomaly": 0.41
+          "maxTemp": 22.19,
+          "minTemp": 8.35,
+          "precip": 369.76,
+          "anomaly": 0.66
         },
         {
           "year": 1996,
-          "maxTemp": 21.99,
+          "maxTemp": 22.18,
           "minTemp": 7.88,
-          "precip": 351.88,
-          "anomaly": 0.3
+          "precip": 417.72,
+          "anomaly": 0.65
         },
         {
           "year": 1997,
-          "maxTemp": 22.54,
-          "minTemp": 9.17,
-          "precip": 330.7,
-          "anomaly": 0.85
+          "maxTemp": 22.45,
+          "minTemp": 9.06,
+          "precip": 394.57,
+          "anomaly": 0.92
         },
         {
           "year": 1998,
-          "maxTemp": 23.27,
-          "minTemp": 9.26,
-          "precip": 309.8,
-          "anomaly": 1.58
+          "maxTemp": 23.31,
+          "minTemp": 9.16,
+          "precip": 373.85,
+          "anomaly": 1.78
         },
         {
           "year": 1999,
-          "maxTemp": 23.21,
-          "minTemp": 9.45,
-          "precip": 307.18,
-          "anomaly": 1.52
+          "maxTemp": 23.26,
+          "minTemp": 9.36,
+          "precip": 391.04,
+          "anomaly": 1.73
         },
         {
           "year": 2000,
-          "maxTemp": 23.51,
-          "minTemp": 9.25,
-          "precip": 230.99,
-          "anomaly": 1.82
+          "maxTemp": 23.54,
+          "minTemp": 9.15,
+          "precip": 295.04,
+          "anomaly": 2.01
         },
         {
           "year": 2001,
-          "maxTemp": 24.29,
-          "minTemp": 9.38,
-          "precip": 156.97,
-          "anomaly": 2.6
+          "maxTemp": 24.32,
+          "minTemp": 9.23,
+          "precip": 211.28,
+          "anomaly": 2.79
         },
         {
           "year": 2002,
-          "maxTemp": 23.48,
-          "minTemp": 10.21,
-          "precip": 269.85,
-          "anomaly": 1.79
+          "maxTemp": 23.54,
+          "minTemp": 10.01,
+          "precip": 315.43,
+          "anomaly": 2.01
         },
         {
           "year": 2003,
-          "maxTemp": 22.87,
-          "minTemp": 8.96,
-          "precip": 345.88,
-          "anomaly": 1.18
+          "maxTemp": 22.89,
+          "minTemp": 8.89,
+          "precip": 375.27,
+          "anomaly": 1.36
         },
         {
           "year": 2004,
-          "maxTemp": 23.23,
-          "minTemp": 9.32,
-          "precip": 367.14,
-          "anomaly": 1.54
+          "maxTemp": 23.29,
+          "minTemp": 9.22,
+          "precip": 418.8,
+          "anomaly": 1.76
         },
         {
           "year": 2005,
-          "maxTemp": 22.45,
-          "minTemp": 8.68,
-          "precip": 328.66,
-          "anomaly": 0.76
+          "maxTemp": 22.48,
+          "minTemp": 8.62,
+          "precip": 416.54,
+          "anomaly": 0.95
         },
         {
           "year": 2006,
-          "maxTemp": 23.25,
-          "minTemp": 9.38,
-          "precip": 326.24,
-          "anomaly": 1.56
+          "maxTemp": 23.32,
+          "minTemp": 9.37,
+          "precip": 401.28,
+          "anomaly": 1.79
         },
         {
           "year": 2007,
-          "maxTemp": 23.49,
-          "minTemp": 8.55,
-          "precip": 241.2,
-          "anomaly": 1.8
+          "maxTemp": 23.61,
+          "minTemp": 8.53,
+          "precip": 292.8,
+          "anomaly": 2.08
         },
         {
           "year": 2008,
-          "maxTemp": 23.38,
-          "minTemp": 8.52,
-          "precip": 221.97,
-          "anomaly": 1.69
+          "maxTemp": 22.5,
+          "minTemp": 8.55,
+          "precip": 300.02,
+          "anomaly": 0.97
         },
         {
           "year": 2009,
@@ -9143,409 +10121,409 @@
         },
         {
           "year": 2010,
-          "maxTemp": 22.76,
-          "minTemp": 8.65,
-          "precip": 357.43,
-          "anomaly": 1.07
+          "maxTemp": 22.88,
+          "minTemp": 8.58,
+          "precip": 434.76,
+          "anomaly": 1.35
         },
         {
           "year": 2011,
-          "maxTemp": 23.11,
-          "minTemp": 9.16,
-          "precip": 279.98,
-          "anomaly": 1.42
+          "maxTemp": 23.16,
+          "minTemp": 9.07,
+          "precip": 344.35,
+          "anomaly": 1.63
         },
         {
           "year": 2012,
-          "maxTemp": 22.05,
-          "minTemp": 8.41,
-          "precip": 252.13,
-          "anomaly": 0.36
+          "maxTemp": 22.09,
+          "minTemp": 8.26,
+          "precip": 301.21,
+          "anomaly": 0.56
         },
         {
           "year": 2013,
-          "maxTemp": 23.01,
-          "minTemp": 8.92,
-          "precip": 251.0,
-          "anomaly": 1.32
+          "maxTemp": 23.05,
+          "minTemp": 8.79,
+          "precip": 324.29,
+          "anomaly": 1.52
         },
         {
           "year": 2014,
-          "maxTemp": 22.72,
-          "minTemp": 8.34,
-          "precip": 209.36,
-          "anomaly": 1.03
+          "maxTemp": 22.75,
+          "minTemp": 8.31,
+          "precip": 283.99,
+          "anomaly": 1.22
         },
         {
           "year": 2015,
-          "maxTemp": 21.93,
-          "minTemp": 7.9,
-          "precip": 241.98,
-          "anomaly": 0.24
-        },
-        {
-          "year": 2016,
-          "maxTemp": 22.33,
-          "minTemp": 8.19,
-          "precip": 172.85,
-          "anomaly": 0.64
-        },
-        {
-          "year": 2017,
-          "maxTemp": 22.22,
-          "minTemp": 7.82,
-          "precip": 191.35,
+          "maxTemp": 22.06,
+          "minTemp": 7.79,
+          "precip": 343.97,
           "anomaly": 0.53
         },
         {
+          "year": 2016,
+          "maxTemp": 22.64,
+          "minTemp": 8.06,
+          "precip": 260.74,
+          "anomaly": 1.11
+        },
+        {
+          "year": 2017,
+          "maxTemp": 22.45,
+          "minTemp": 7.71,
+          "precip": 266.01,
+          "anomaly": 0.92
+        },
+        {
           "year": 2018,
-          "maxTemp": 19.62,
-          "minTemp": 4.03,
-          "precip": 242.01,
-          "anomaly": -2.07
+          "maxTemp": 19.48,
+          "minTemp": 3.28,
+          "precip": 198.01,
+          "anomaly": -2.05
         },
         {
           "year": 2019,
-          "maxTemp": 18.56,
-          "minTemp": 5.04,
-          "precip": 126.54,
-          "anomaly": -3.13
+          "maxTemp": 18.53,
+          "minTemp": 4.19,
+          "precip": 103.53,
+          "anomaly": -3.0
         }
       ],
       "forecast": [
         {
           "year": 1961,
-          "historicalMax": 22.0,
-          "historicalMin": 9.55,
+          "historicalMax": 20.1,
+          "historicalMin": 8.37,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1962,
-          "historicalMax": 20.46,
-          "historicalMin": 7.46,
+          "historicalMax": 19.69,
+          "historicalMin": 6.49,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1963,
-          "historicalMax": 22.8,
-          "historicalMin": 9.35,
+          "historicalMax": 21.8,
+          "historicalMin": 8.19,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1964,
-          "historicalMax": 21.81,
-          "historicalMin": 8.71,
+          "historicalMax": 20.91,
+          "historicalMin": 7.62,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1965,
-          "historicalMax": 20.14,
-          "historicalMin": 8.12,
+          "historicalMax": 19.4,
+          "historicalMin": 7.08,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1966,
-          "historicalMax": 21.75,
-          "historicalMin": 8.49,
+          "historicalMax": 20.85,
+          "historicalMin": 7.42,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1967,
-          "historicalMax": 21.64,
-          "historicalMin": 8.97,
+          "historicalMax": 20.76,
+          "historicalMin": 7.85,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1968,
-          "historicalMax": 20.32,
-          "historicalMin": 7.56,
+          "historicalMax": 20.47,
+          "historicalMin": 7.64,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1969,
-          "historicalMax": 21.35,
-          "historicalMin": 8.09,
+          "historicalMax": 21.52,
+          "historicalMin": 8.17,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1970,
-          "historicalMax": 23.21,
-          "historicalMin": 9.47,
+          "historicalMax": 23.22,
+          "historicalMin": 9.48,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1971,
-          "historicalMax": 22.31,
-          "historicalMin": 6.81,
+          "historicalMax": 22.46,
+          "historicalMin": 7.09,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1972,
-          "historicalMax": 20.51,
-          "historicalMin": 7.76,
+          "historicalMax": 20.63,
+          "historicalMin": 7.79,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1973,
-          "historicalMax": 22.53,
-          "historicalMin": 10.59,
+          "historicalMax": 22.55,
+          "historicalMin": 10.44,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1974,
-          "historicalMax": 18.88,
+          "historicalMax": 19.26,
           "historicalMin": 7.95,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1975,
-          "historicalMax": 20.22,
-          "historicalMin": 7.69,
+          "historicalMax": 20.4,
+          "historicalMin": 7.72,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1976,
-          "historicalMax": 22.22,
-          "historicalMin": 9.22,
+          "historicalMax": 22.26,
+          "historicalMin": 9.15,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1977,
-          "historicalMax": 23.14,
-          "historicalMin": 9.9,
+          "historicalMax": 23.12,
+          "historicalMin": 9.83,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1978,
-          "historicalMax": 22.56,
+          "historicalMax": 22.57,
           "historicalMin": 9.23,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1979,
-          "historicalMax": 21.62,
-          "historicalMin": 8.39,
+          "historicalMax": 21.74,
+          "historicalMin": 8.42,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1980,
-          "historicalMax": 22.6,
-          "historicalMin": 9.24,
+          "historicalMax": 22.67,
+          "historicalMin": 9.19,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1981,
-          "historicalMax": 18.3,
-          "historicalMin": 7.43,
+          "historicalMax": 18.75,
+          "historicalMin": 7.53,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1982,
-          "historicalMax": 21.65,
-          "historicalMin": 8.98,
+          "historicalMax": 21.63,
+          "historicalMin": 8.79,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1983,
-          "historicalMax": 22.41,
-          "historicalMin": 8.65,
+          "historicalMax": 22.38,
+          "historicalMin": 8.49,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1984,
           "historicalMax": 22.4,
-          "historicalMin": 8.58,
+          "historicalMin": 8.48,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1985,
-          "historicalMax": 23.04,
-          "historicalMin": 8.78,
+          "historicalMax": 23.08,
+          "historicalMin": 8.71,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1986,
-          "historicalMax": 21.72,
-          "historicalMin": 8.2,
+          "historicalMax": 21.76,
+          "historicalMin": 8.11,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1987,
-          "historicalMax": 22.25,
-          "historicalMin": 8.63,
+          "historicalMax": 22.39,
+          "historicalMin": 8.4,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1988,
-          "historicalMax": 22.87,
-          "historicalMin": 9.33,
+          "historicalMax": 22.95,
+          "historicalMin": 9.06,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1989,
-          "historicalMax": 21.36,
-          "historicalMin": 7.82,
+          "historicalMax": 21.46,
+          "historicalMin": 7.53,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1990,
-          "historicalMax": 22.76,
-          "historicalMin": 8.76,
+          "historicalMax": 22.83,
+          "historicalMin": 8.51,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1991,
-          "historicalMax": 22.07,
-          "historicalMin": 8.74,
+          "historicalMax": 22.09,
+          "historicalMin": 8.65,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1992,
-          "historicalMax": 21.78,
-          "historicalMin": 8.43,
+          "historicalMax": 21.79,
+          "historicalMin": 8.4,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1993,
-          "historicalMax": 22.43,
-          "historicalMin": 8.67,
+          "historicalMax": 22.57,
+          "historicalMin": 8.59,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1994,
-          "historicalMax": 22.49,
-          "historicalMin": 9.23,
+          "historicalMax": 22.53,
+          "historicalMin": 9.15,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1995,
-          "historicalMax": 22.1,
-          "historicalMin": 8.41,
+          "historicalMax": 22.19,
+          "historicalMin": 8.35,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1996,
-          "historicalMax": 21.99,
+          "historicalMax": 22.18,
           "historicalMin": 7.88,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1997,
-          "historicalMax": 22.54,
-          "historicalMin": 9.17,
+          "historicalMax": 22.45,
+          "historicalMin": 9.06,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1998,
-          "historicalMax": 23.27,
-          "historicalMin": 9.26,
+          "historicalMax": 23.31,
+          "historicalMin": 9.16,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 1999,
-          "historicalMax": 23.21,
-          "historicalMin": 9.45,
+          "historicalMax": 23.26,
+          "historicalMin": 9.36,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 2000,
-          "historicalMax": 23.51,
-          "historicalMin": 9.25,
+          "historicalMax": 23.54,
+          "historicalMin": 9.15,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 2001,
-          "historicalMax": 24.29,
-          "historicalMin": 9.38,
+          "historicalMax": 24.32,
+          "historicalMin": 9.23,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 2002,
-          "historicalMax": 23.48,
-          "historicalMin": 10.21,
+          "historicalMax": 23.54,
+          "historicalMin": 10.01,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 2003,
-          "historicalMax": 22.87,
-          "historicalMin": 8.96,
+          "historicalMax": 22.89,
+          "historicalMin": 8.89,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 2004,
-          "historicalMax": 23.23,
-          "historicalMin": 9.32,
+          "historicalMax": 23.29,
+          "historicalMin": 9.22,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 2005,
-          "historicalMax": 22.45,
-          "historicalMin": 8.68,
+          "historicalMax": 22.48,
+          "historicalMin": 8.62,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 2006,
-          "historicalMax": 23.25,
-          "historicalMin": 9.38,
+          "historicalMax": 23.32,
+          "historicalMin": 9.37,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 2007,
-          "historicalMax": 23.49,
-          "historicalMin": 8.55,
+          "historicalMax": 23.61,
+          "historicalMin": 8.53,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 2008,
-          "historicalMax": 23.38,
-          "historicalMin": 8.52,
+          "historicalMax": 22.5,
+          "historicalMin": 8.55,
           "forecastMax": null,
           "forecastMin": null
         },
@@ -9558,218 +10536,218 @@
         },
         {
           "year": 2010,
-          "historicalMax": 22.76,
-          "historicalMin": 8.65,
+          "historicalMax": 22.88,
+          "historicalMin": 8.58,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 2011,
-          "historicalMax": 23.11,
-          "historicalMin": 9.16,
+          "historicalMax": 23.16,
+          "historicalMin": 9.07,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 2012,
-          "historicalMax": 22.05,
-          "historicalMin": 8.41,
+          "historicalMax": 22.09,
+          "historicalMin": 8.26,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 2013,
-          "historicalMax": 23.01,
-          "historicalMin": 8.92,
+          "historicalMax": 23.05,
+          "historicalMin": 8.79,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 2014,
-          "historicalMax": 22.72,
-          "historicalMin": 8.34,
+          "historicalMax": 22.75,
+          "historicalMin": 8.31,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 2015,
-          "historicalMax": 21.93,
-          "historicalMin": 7.9,
+          "historicalMax": 22.06,
+          "historicalMin": 7.79,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 2016,
-          "historicalMax": 22.33,
-          "historicalMin": 8.19,
+          "historicalMax": 22.64,
+          "historicalMin": 8.06,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 2017,
-          "historicalMax": 22.22,
-          "historicalMin": 7.82,
+          "historicalMax": 22.45,
+          "historicalMin": 7.71,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 2018,
-          "historicalMax": 19.62,
-          "historicalMin": 4.03,
+          "historicalMax": 19.48,
+          "historicalMin": 3.28,
           "forecastMax": null,
           "forecastMin": null
         },
         {
           "year": 2019,
-          "historicalMax": 18.56,
-          "historicalMin": 5.04,
-          "forecastMax": 18.56,
-          "forecastMin": 5.04
+          "historicalMax": 18.53,
+          "historicalMin": 4.19,
+          "forecastMax": 18.53,
+          "forecastMin": 4.19
         },
         {
           "year": 2020,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 18.58,
-          "forecastMin": 5.03
+          "forecastMax": 18.56,
+          "forecastMin": 4.19
         },
         {
           "year": 2021,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 18.6,
-          "forecastMin": 5.02
+          "forecastMax": 18.59,
+          "forecastMin": 4.18
         },
         {
           "year": 2022,
           "historicalMax": null,
           "historicalMin": null,
           "forecastMax": 18.62,
-          "forecastMin": 5.01
+          "forecastMin": 4.18
         },
         {
           "year": 2023,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 18.64,
-          "forecastMin": 5.0
+          "forecastMax": 18.65,
+          "forecastMin": 4.17
         },
         {
           "year": 2024,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 18.66,
-          "forecastMin": 4.98
+          "forecastMax": 18.68,
+          "forecastMin": 4.17
         },
         {
           "year": 2025,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 18.67,
-          "forecastMin": 4.97
+          "forecastMax": 18.71,
+          "forecastMin": 4.17
         },
         {
           "year": 2026,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 18.69,
-          "forecastMin": 4.96
+          "forecastMax": 18.73,
+          "forecastMin": 4.16
         },
         {
           "year": 2027,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 18.71,
-          "forecastMin": 4.95
+          "forecastMax": 18.76,
+          "forecastMin": 4.16
         },
         {
           "year": 2028,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 18.73,
-          "forecastMin": 4.94
+          "forecastMax": 18.79,
+          "forecastMin": 4.15
         },
         {
           "year": 2029,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 18.75,
-          "forecastMin": 4.93
+          "forecastMax": 18.82,
+          "forecastMin": 4.15
         },
         {
           "year": 2030,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 18.77,
-          "forecastMin": 4.92
+          "forecastMax": 18.85,
+          "forecastMin": 4.15
         },
         {
           "year": 2031,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 18.79,
-          "forecastMin": 4.91
+          "forecastMax": 18.88,
+          "forecastMin": 4.14
         },
         {
           "year": 2032,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 18.81,
-          "forecastMin": 4.9
+          "forecastMax": 18.91,
+          "forecastMin": 4.14
         },
         {
           "year": 2033,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 18.83,
-          "forecastMin": 4.89
+          "forecastMax": 18.94,
+          "forecastMin": 4.13
         },
         {
           "year": 2034,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 18.85,
-          "forecastMin": 4.87
+          "forecastMax": 18.97,
+          "forecastMin": 4.13
         },
         {
           "year": 2035,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 18.87,
-          "forecastMin": 4.86
+          "forecastMax": 19.0,
+          "forecastMin": 4.12
         },
         {
           "year": 2036,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 18.89,
-          "forecastMin": 4.85
+          "forecastMax": 19.03,
+          "forecastMin": 4.12
         },
         {
           "year": 2037,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 18.9,
-          "forecastMin": 4.84
+          "forecastMax": 19.06,
+          "forecastMin": 4.12
         },
         {
           "year": 2038,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 18.92,
-          "forecastMin": 4.83
+          "forecastMax": 19.09,
+          "forecastMin": 4.11
         },
         {
           "year": 2039,
           "historicalMax": null,
           "historicalMin": null,
-          "forecastMax": 18.94,
-          "forecastMin": 4.82
+          "forecastMax": 19.11,
+          "forecastMin": 4.11
         }
       ],
       "metrics": {
-        "maxTrendPerDecade": 0.191,
-        "minTrendPerDecade": -0.11
+        "maxTrendPerDecade": 0.292,
+        "minTrendPerDecade": -0.041
       }
     }
   }
