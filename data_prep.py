@@ -76,10 +76,8 @@ def load_and_clean_data(file_path):
         for col in df_raw.columns:
             df_raw[col] = pd.to_numeric(df_raw[col], errors='coerce')
             
-        # Filter for the 11 target stations from the report
-        target_stations = {'Astore', 'Bunji', 'Chilas', 'Chitral', 'Darosh', 'Dir', 'Gilgit', 'Gupis', 'Quetta', 'Skardu', 'Zhob'}
-        
-        valid_cities = [c for c in cities if c in target_stations]
+        # Include all cities found in the sheet
+        valid_cities = cities
         
         cols_to_keep = []
         for city in valid_cities:
