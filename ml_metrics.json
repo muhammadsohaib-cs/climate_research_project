@@ -12,16 +12,22 @@
     "forecast_2037_min": 12.636611148831221
   },
   "Chilas": {
-    "max_trend_per_decade": 0.12946853711097656,
-    "min_trend_per_decade": 0.06631651904928329,
-    "forecast_2037_max": 26.81238552692376,
-    "forecast_2037_min": 14.619139655574354
+    "max_trend_per_decade": 0.36247808656030656,
+    "min_trend_per_decade": 0.06232461951757615,
+    "forecast_2037_max": 27.680573783840714,
+    "forecast_2037_min": 14.604265929135195
   },
   "Darosh": {
     "max_trend_per_decade": -0.17921966706367923,
     "min_trend_per_decade": -0.5537703161436183,
     "forecast_2037_max": 22.84823288817642,
     "forecast_2037_min": 8.081170285113188
+  },
+  "Dir": {
+    "max_trend_per_decade": 1.032565098345088,
+    "min_trend_per_decade": 0.5833302335677847,
+    "forecast_2037_max": 26.44630802638696,
+    "forecast_2037_min": 9.117189661649633
   },
   "Gilgit": {
     "max_trend_per_decade": 0.20286802509142549,
@@ -53,10 +59,232 @@
     "forecast_2037_max": 25.811781568041035,
     "forecast_2037_min": 9.633054565380007
   },
+  "Balakot": {
+    "max_trend_per_decade": 1.0983974076808558,
+    "min_trend_per_decade": -0.017219598054711724,
+    "forecast_2037_max": 28.511243013295626,
+    "forecast_2037_min": 11.321441458209202
+  },
+  "Ghari Dupatta": {
+    "max_trend_per_decade": 0.6400103948058878,
+    "min_trend_per_decade": 0.37281292664307514,
+    "forecast_2037_max": 28.492068201531367,
+    "forecast_2037_min": 13.50807954114886
+  },
+  "Cherat": {
+    "max_trend_per_decade": -0.31913211037269174,
+    "min_trend_per_decade": -0.22589889264620117,
+    "forecast_2037_max": 19.408462997478836,
+    "forecast_2037_min": 11.125500772602017
+  },
+  "Islamabad": {
+    "max_trend_per_decade": -0.14241680999225748,
+    "min_trend_per_decade": -0.12578598433458948,
+    "forecast_2037_max": 27.798051801308613,
+    "forecast_2037_min": 13.571570468218862
+  },
+  "Kakul": {
+    "max_trend_per_decade": 0.013914289438671755,
+    "min_trend_per_decade": -0.6728994830061663,
+    "forecast_2037_max": 22.942938057214135,
+    "forecast_2037_min": 7.46490757539658
+  },
+  "Kotli": {
+    "max_trend_per_decade": 0.03172745646976532,
+    "min_trend_per_decade": 0.16101282804755984,
+    "forecast_2037_max": 28.514983363672215,
+    "forecast_2037_min": 15.218461105582271
+  },
+  "Murree": {
+    "max_trend_per_decade": 0.1608814590317796,
+    "min_trend_per_decade": -0.21322299043075055,
+    "forecast_2037_max": 18.06968438476956,
+    "forecast_2037_min": 7.492751946325072
+  },
+  "Muzaffarabad": {
+    "max_trend_per_decade": 0.0712980845451269,
+    "min_trend_per_decade": -0.08722135445940013,
+    "forecast_2037_max": 27.885638822107737,
+    "forecast_2037_min": 13.104667291560265
+  },
+  "Parachinar": {
+    "max_trend_per_decade": -0.833161259931765,
+    "min_trend_per_decade": -1.233721159536641,
+    "forecast_2037_max": 16.432229145523593,
+    "forecast_2037_min": 1.5705591841518185
+  },
+  "Saidu Sharif": {
+    "max_trend_per_decade": 1.2698332267374381,
+    "min_trend_per_decade": 0.37494702701388094,
+    "forecast_2037_max": 30.005672891999268,
+    "forecast_2037_min": 12.67161665279204
+  },
+  "Panjgur": {
+    "max_trend_per_decade": -0.43374429088665484,
+    "min_trend_per_decade": -0.451896680181244,
+    "forecast_2037_max": 27.47588854810533,
+    "forecast_2037_min": 12.210199066120708
+  },
+  "Dalbandin": {
+    "max_trend_per_decade": -0.20192734590774764,
+    "min_trend_per_decade": -0.4860446661887607,
+    "forecast_2037_max": 30.097850121097125,
+    "forecast_2037_min": 10.8298685435675
+  },
+  "Kalat": {
+    "max_trend_per_decade": -0.42902174928829295,
+    "min_trend_per_decade": -0.39335698934013685,
+    "forecast_2037_max": 19.54763508820301,
+    "forecast_2037_min": 3.5362324484719494
+  },
+  "Khuzdar": {
+    "max_trend_per_decade": 2.5558756762822425,
+    "min_trend_per_decade": 2.641690085726358,
+    "forecast_2037_max": 36.94377746899255,
+    "forecast_2037_min": 23.089198322871653
+  },
+  "Nokkundi": {
+    "max_trend_per_decade": -0.2856537655492097,
+    "min_trend_per_decade": -0.35067604330133173,
+    "forecast_2037_max": 30.61977525074404,
+    "forecast_2037_min": 14.841782056765794
+  },
+  "Sibbi": {
+    "max_trend_per_decade": -0.7917378573166882,
+    "min_trend_per_decade": -0.7549234147379763,
+    "forecast_2037_max": 30.54931972234641,
+    "forecast_2037_min": 14.843339887066605
+  },
+  "Barkhan": {
+    "max_trend_per_decade": 0.7517007785968665,
+    "min_trend_per_decade": -0.08339764703390073,
+    "forecast_2037_max": 30.178325663830037,
+    "forecast_2037_min": 12.403540472054882
+  },
+  "Chhor": {
+    "max_trend_per_decade": -0.012318898601233362,
+    "min_trend_per_decade": -0.2450596908904225,
+    "forecast_2037_max": 34.734980352829524,
+    "forecast_2037_min": 16.4760378942375
+  },
+  "Hyderabad": {
+    "max_trend_per_decade": 0.03830467915003264,
+    "min_trend_per_decade": -0.23903825130853792,
+    "forecast_2037_max": 33.61860148176751,
+    "forecast_2037_min": 19.147501073422234
+  },
+  "Jaccobabad": {
+    "max_trend_per_decade": -0.19885201364824925,
+    "min_trend_per_decade": -0.16386034521026202,
+    "forecast_2037_max": 32.6903022391189,
+    "forecast_2037_min": 18.79300985951341
+  },
+  "Jiwani": {
+    "max_trend_per_decade": 0.6184972285022723,
+    "min_trend_per_decade": 0.5005316287833275,
+    "forecast_2037_max": 32.230063898540465,
+    "forecast_2037_min": 22.06040874421133
+  },
+  "Karachi": {
+    "max_trend_per_decade": 0.20304982786104397,
+    "min_trend_per_decade": -0.07133855102587353,
+    "forecast_2037_max": 32.79303935295282,
+    "forecast_2037_min": 20.21636082543352
+  },
+  "Nawabshah": {
+    "max_trend_per_decade": -1.1237107533889406,
+    "min_trend_per_decade": -1.6288576261103251,
+    "forecast_2037_max": 28.635420914072483,
+    "forecast_2037_min": 8.683178713345114
+  },
+  "Padidan": {
+    "max_trend_per_decade": -0.7568908013280868,
+    "min_trend_per_decade": -0.22236929318888132,
+    "forecast_2037_max": 30.322477324006428,
+    "forecast_2037_min": 16.526366158663308
+  },
+  "Passni": {
+    "max_trend_per_decade": -0.1787655701322767,
+    "min_trend_per_decade": 0.28406727677129173,
+    "forecast_2037_max": 30.385374149662503,
+    "forecast_2037_min": 20.825328698710585
+  },
+  "Rohri": {
+    "max_trend_per_decade": 0.9361263239078542,
+    "min_trend_per_decade": 1.3108927441172207,
+    "forecast_2037_max": 36.77939668532622,
+    "forecast_2037_min": 23.38155053256574
+  },
+  "Bahawalnagar": {
+    "max_trend_per_decade": 0.25567240935222235,
+    "min_trend_per_decade": -0.3274750157719626,
+    "forecast_2037_max": 32.3958942812108,
+    "forecast_2037_min": 16.271861054461382
+  },
+  "Bahawalpur": {
+    "max_trend_per_decade": -0.25401662177951934,
+    "min_trend_per_decade": -0.5125986912089813,
+    "forecast_2037_max": 31.26659744382924,
+    "forecast_2037_min": 14.223067556859078
+  },
+  "D.I Khan": {
+    "max_trend_per_decade": -0.25034259771881245,
+    "min_trend_per_decade": -0.1985149148685204,
+    "forecast_2037_max": 30.142132672383696,
+    "forecast_2037_min": 15.793914565214344
+  },
+  "Faisalabad": {
+    "max_trend_per_decade": -0.25447443860069535,
+    "min_trend_per_decade": -0.22357994503885772,
+    "forecast_2037_max": 29.475104662831328,
+    "forecast_2037_min": 15.31120331334811
+  },
+  "Jhelum": {
+    "max_trend_per_decade": -0.288243714053085,
+    "min_trend_per_decade": -0.1376852648388961,
+    "forecast_2037_max": 28.97289504618913,
+    "forecast_2037_min": 16.2779767557231
+  },
+  "Khanpur": {
+    "max_trend_per_decade": -0.4955635341797842,
+    "min_trend_per_decade": -0.25768155765376516,
+    "forecast_2037_max": 30.453197692602274,
+    "forecast_2037_min": 15.304446248752036
+  },
+  "Kohat": {
+    "max_trend_per_decade": 0.1711533307726507,
+    "min_trend_per_decade": 0.020325224114934197,
+    "forecast_2037_max": 29.66574424015074,
+    "forecast_2037_min": 18.17553811924179
+  },
+  "Mianwali": {
+    "max_trend_per_decade": -0.970448993192915,
+    "min_trend_per_decade": -0.1807500338734894,
+    "forecast_2037_max": 26.3259728842082,
+    "forecast_2037_min": 17.099872526698505
+  },
+  "Multan": {
+    "max_trend_per_decade": -0.37355053691106666,
+    "min_trend_per_decade": -0.2804927417245042,
+    "forecast_2037_max": 30.443739577086973,
+    "forecast_2037_min": 14.358735597493286
+  },
+  "Sargodha": {
+    "max_trend_per_decade": -0.507935720360456,
+    "min_trend_per_decade": 0.32821556837578103,
+    "forecast_2037_max": 28.452542505284555,
+    "forecast_2037_min": 16.955440431868155
+  },
+  "Sialkot": {
+    "max_trend_per_decade": -0.2991107303244185,
+    "min_trend_per_decade": -0.16682881681053027,
+    "forecast_2037_max": 27.483293032979397,
+    "forecast_2037_min": 16.130193540895135
+  },
   "National": {
-    "max_trend_per_decade": 0.1914804106613624,
-    "min_trend_per_decade": -0.11000945132363175,
-    "forecast_2037_max": 22.991839501743804,
-    "forecast_2037_min": 8.025173015860904
+    "max_trend_per_decade": 0.03318646521151782,
+    "min_trend_per_decade": -0.10546806569510596,
+    "forecast_2037_max": 27.84235005928702,
+    "forecast_2037_min": 13.285619673277722
   }
 }
