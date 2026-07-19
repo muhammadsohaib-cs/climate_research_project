@@ -83,18 +83,31 @@ def create_json():
         forecast_data[-1]["forecastMax"] = current_max
         forecast_data[-1]["forecastMin"] = current_min
         
-        for i in range(1, 21):
-            year = last_year + i
-            current_max += max_trend
-            current_min += min_trend
-            
-            forecast_data.append({
-                "year": year,
-                "historicalMax": None,
-                "historicalMin": None,
-                "forecastMax": round(current_max, 2),
-                "forecastMin": round(current_min, 2)
-            })
+        cmip6_anomalies = loc_metrics.get('cmip6_anomalies')
+        
+        if cmip6_anomalies:
+            for i, anomaly in enumerate(cmip6_anomalies):
+                year = last_year + i + 1
+                forecast_data.append({
+                    "year": year,
+                    "historicalMax": None,
+                    "historicalMin": None,
+                    "forecastMax": round(current_max + anomaly, 2),
+                    "forecastMin": round(current_min + anomaly, 2)
+                })
+        else:
+            for i in range(1, 21):
+                year = last_year + i
+                current_max += max_trend
+                current_min += min_trend
+                
+                forecast_data.append({
+                    "year": year,
+                    "historicalMax": None,
+                    "historicalMin": None,
+                    "forecastMax": round(current_max, 2),
+                    "forecastMin": round(current_min, 2)
+                })
             
         final_output["data"][loc] = {
             "historical": loc_data,

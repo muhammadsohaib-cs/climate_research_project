@@ -7,28 +7,34 @@ def run_eda(csv_path):
     print(f"Loading cleaned data from {csv_path}...")
     df = pd.read_csv(csv_path, parse_dates=['Date'], index_col='Date')
     
-    # Calculate annual averages
-    print("Calculating annual aggregates...")
-    annual_mean = df.resample('YE').mean()
-    annual_sum = df.resample('YE').sum() # For precipitation it might be better to use sum, but wait, 'YE' is the new alias for 'Y'
+    # Filter out corrupted trailing data from 2018/2019
+    df = df[df.index.year <= 2017]
     
-    # We have MaxTemp, MinTemp, Precip
+    # Calculate annual aggregates correctly based on data type
+    print("Calculating annual aggregates...")
+    annual_max = df.resample('YE').max()
+    annual_min = df.resample('YE').min()
+    annual_sum = df.resample('YE').sum()
+    
+    annual_agg = pd.DataFrame(index=annual_max.index)
+    
     max_temp_cols = [c for c in df.columns if c.startswith('MaxTemp_')]
     min_temp_cols = [c for c in df.columns if c.startswith('MinTemp_')]
     precip_cols = [c for c in df.columns if c.startswith('Precip_')]
     
-    # Aggregate across all stations
-    annual_mean['National_MaxTemp'] = annual_mean[max_temp_cols].mean(axis=1)
-    annual_mean['National_MinTemp'] = annual_mean[min_temp_cols].mean(axis=1)
-    
-    # For precipitation, maybe take the national average of the annual sum
-    # First compute annual sum for each station
-    annual_precip_sum = df[precip_cols].resample('YE').sum()
-    annual_mean['National_Precip'] = annual_precip_sum.mean(axis=1)
-    
-    # Update individual precipitation columns with their sum instead of mean
+    for c in max_temp_cols:
+        annual_agg[c] = annual_max[c]
+    for c in min_temp_cols:
+        annual_agg[c] = annual_min[c]
     for c in precip_cols:
-        annual_mean[c] = annual_precip_sum[c]
+        annual_agg[c] = annual_sum[c]
+        
+    # Aggregate across all stations
+    annual_agg['National_MaxTemp'] = annual_agg[max_temp_cols].mean(axis=1)
+    annual_agg['National_MinTemp'] = annual_agg[min_temp_cols].mean(axis=1)
+    annual_agg['National_Precip'] = annual_agg[precip_cols].mean(axis=1)
+    
+    annual_mean = annual_agg # For backwards compatibility with plotting code below
     
     # Plot National Temperatures (Trend over time)
     plt.figure(figsize=(12, 6))
