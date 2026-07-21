@@ -53,10 +53,8 @@ def create_json():
                 "anomaly": anomaly
             })
             
-        # Generate Forecasts
+        # Generate Forecasts from ML models
         loc_metrics = metrics.get(loc, {})
-        max_trend = loc_metrics.get('max_trend_per_decade', 0) / 10
-        min_trend = loc_metrics.get('min_trend_per_decade', 0) / 10
         
         # get last valid data
         valid_data = [d for d in loc_data if d['maxTemp'] is not None and d['minTemp'] is not None]
@@ -76,38 +74,54 @@ def create_json():
                 "historicalMax": d['maxTemp'],
                 "historicalMin": d['minTemp'],
                 "forecastMax": None,
-                "forecastMin": None
+                "forecastMin": None,
+                "forecastMaxLower": None,
+                "forecastMaxUpper": None,
+                "forecastMinLower": None,
+                "forecastMinUpper": None,
+                "forecastMaxRange": None,
+                "forecastMinRange": None
             })
             
-        # Link
+        # Link transition point (last year of history)
         forecast_data[-1]["forecastMax"] = current_max
         forecast_data[-1]["forecastMin"] = current_min
+        forecast_data[-1]["forecastMaxLower"] = current_max
+        forecast_data[-1]["forecastMaxUpper"] = current_max
+        forecast_data[-1]["forecastMinLower"] = current_min
+        forecast_data[-1]["forecastMinUpper"] = current_min
+        forecast_data[-1]["forecastMaxRange"] = [current_max, current_max]
+        forecast_data[-1]["forecastMinRange"] = [current_min, current_min]
         
-        cmip6_anomalies = loc_metrics.get('cmip6_anomalies')
+        forecast_max_mean = loc_metrics.get('forecast_max_mean', [])
+        forecast_max_lower = loc_metrics.get('forecast_max_lower', [])
+        forecast_max_upper = loc_metrics.get('forecast_max_upper', [])
+        forecast_min_mean = loc_metrics.get('forecast_min_mean', [])
+        forecast_min_lower = loc_metrics.get('forecast_min_lower', [])
+        forecast_min_upper = loc_metrics.get('forecast_min_upper', [])
         
-        if cmip6_anomalies:
-            for i, anomaly in enumerate(cmip6_anomalies):
-                year = last_year + i + 1
-                forecast_data.append({
-                    "year": year,
-                    "historicalMax": None,
-                    "historicalMin": None,
-                    "forecastMax": round(current_max + anomaly, 2),
-                    "forecastMin": round(current_min + anomaly, 2)
-                })
-        else:
-            for i in range(1, 21):
-                year = last_year + i
-                current_max += max_trend
-                current_min += min_trend
-                
-                forecast_data.append({
-                    "year": year,
-                    "historicalMax": None,
-                    "historicalMin": None,
-                    "forecastMax": round(current_max, 2),
-                    "forecastMin": round(current_min, 2)
-                })
+        for i in range(len(forecast_max_mean)):
+            year = last_year + i + 1
+            f_max = round(forecast_max_mean[i], 2)
+            f_max_l = round(forecast_max_lower[i], 2)
+            f_max_u = round(forecast_max_upper[i], 2)
+            f_min = round(forecast_min_mean[i], 2)
+            f_min_l = round(forecast_min_lower[i], 2)
+            f_min_u = round(forecast_min_upper[i], 2)
+            
+            forecast_data.append({
+                "year": year,
+                "historicalMax": None,
+                "historicalMin": None,
+                "forecastMax": f_max,
+                "forecastMin": f_min,
+                "forecastMaxLower": f_max_l,
+                "forecastMaxUpper": f_max_u,
+                "forecastMinLower": f_min_l,
+                "forecastMinUpper": f_min_u,
+                "forecastMaxRange": [f_max_l, f_max_u],
+                "forecastMinRange": [f_min_l, f_min_u]
+            })
             
         final_output["data"][loc] = {
             "historical": loc_data,

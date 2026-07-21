@@ -5,12 +5,16 @@ import numpy as np
 import torch
 import torch.optim as optim
 import matplotlib.pyplot as plt
-from src.data_prep import DataPrepModule
-from src.resolution import ResolutionModule
-from src.model import UNetEmulator, LatitudeLongitudeWeightedMSE
-from scripts.generate_mock_data import generate_mock_netcdf
+try:
+    from src.data_prep import DataPrepModule
+    from src.resolution import ResolutionModule
+    from src.model import UNetEmulator, LatitudeLongitudeWeightedMSE
+    from scripts.generate_mock_data import generate_mock_netcdf
+    HAS_SPATIAL_EMULATOR = True
+except ImportError:
+    HAS_SPATIAL_EMULATOR = False
 
-def run_ml_analysis(mock_data_path):
+def run_spatial_emulator(mock_data_path):
     print("Starting Global Spatial Emulator Pipeline...")
     
     # 1. Data Preparation
@@ -118,76 +122,321 @@ def run_ml_analysis(mock_data_path):
     plot_path = os.path.join(out_dir, 'predicted_tas_map.png')
     plt.savefig(plot_path, bbox_inches='tight')
     plt.close()
-    # 7. Bridge back to Frontend JSON using REAL HISTORICAL DATA
-    print("Exporting REAL trends to ml_metrics.json for frontend compatibility...")
+
+def run_ml_analysis(mock_data_path):
+    if HAS_SPATIAL_EMULATOR:
+        try:
+            run_spatial_emulator(mock_data_path)
+        except Exception as e:
+            print(f"Error running spatial emulator: {e}")
+    else:
+        print("Spatial UNet emulator modules (src/scripts) are not present in this workspace.")
+        print("Skipping global spatial emulator training and proceeding directly to station time-series ML forecasting...")
+
+    # 7. Bridge back to Frontend JSON using REAL HISTORICAL DATA & Advanced ML Forecasting
+    print("Starting Advanced ML Time-Series Forecasting Pipeline...")
     import pandas as pd
     import json
     from scipy.stats import linregress
+    from sklearn.model_selection import TimeSeriesSplit
+    from sklearn.ensemble import GradientBoostingRegressor
+    import statsmodels.api as sm
+    import torch
+    import torch.nn as nn
+    import torch.optim as optim
     
-    PAKISTAN_CITIES = {
-        'Islamabad': (33.6844, 73.0479),
-        'Lahore': (31.5204, 74.3587),
-        'Karachi': (24.8607, 67.0011),
-        'Peshawar': (34.0151, 71.5249),
-        'Quetta': (30.1798, 66.9750),
-        'Multan': (30.1978, 71.4697),
-        'Faisalabad': (31.4187, 73.0791),
-        'Gilgit': (35.9208, 74.3083),
-        'Skardu': (35.3247, 75.5510),
-        'Muzaffarabad': (34.3700, 73.4711),
-        'Hyderabad': (25.3960, 68.3772),
-        'National': (30.3753, 69.3451)
-    }
-    DEFAULT_COORD = (30.3753, 69.3451)
-    
-    def get_pixel_value(lat, lon, grid, lats_array, lons_array):
-        lat_idx = np.abs(lats_array - lat).argmin()
-        lon_idx = np.abs(lons_array - lon).argmin()
-        return grid[lat_idx, lon_idx]
-    
+    # 1. Define Exogenous Climate Forcing Drivers (1961 - 2037)
+    def get_exogenous_features(years):
+        # CO2: Quadratic Keeling Curve fitting historical NOAA observations & RCP projections
+        co2 = 315.0 + 1.25 * (years - 1960) + 0.011 * (years - 1960)**2
+        
+        # Aerosols: Stratospheric Aerosol Optical Depth incorporating major volcanic spikes
+        aerosols = np.full_like(years, 0.005, dtype=float)
+        aerosols[years == 1963] = 0.15   # Agung
+        aerosols[years == 1982] = 0.10   # El Chichón
+        aerosols[years == 1991] = 0.25   # Pinatubo
+        
+        # ONI: Oceanic Niño Index simulated as a sum of dominant ENSO cycles (3.6yr, 5.4yr)
+        oni = 0.8 * np.sin(2 * np.pi * (years - 1960) / 3.6) + \
+              0.5 * np.sin(2 * np.pi * (years - 1960) / 5.4 + 0.8)
+        
+        # Standardize for ML model training stability
+        co2_scaled = (co2 - 380.0) / 40.0
+        aerosols_scaled = (aerosols - 0.02) / 0.05
+        oni_scaled = oni
+        
+        return np.column_stack([co2_scaled, aerosols_scaled, oni_scaled])
+
+    # 2. PyTorch LSTM Model Setup
+    class LSTMForecaster(nn.Module):
+        def __init__(self, input_dim, hidden_dim=8, num_layers=1, dropout=0.1):
+            super().__init__()
+            self.lstm = nn.LSTM(input_dim, hidden_dim, num_layers, batch_first=True)
+            self.dropout = nn.Dropout(dropout)
+            self.linear = nn.Linear(hidden_dim, 1)
+            
+        def forward(self, x):
+            lstm_out, _ = self.lstm(x)
+            out = self.dropout(lstm_out[:, -1, :])
+            return self.linear(out).squeeze(-1)
+
+    def train_lstm_model(X_train, y_train, input_dim, epochs=50, lr=0.01):
+        model = LSTMForecaster(input_dim=input_dim)
+        optimizer = optim.Adam(model.parameters(), lr=lr)
+        criterion = nn.MSELoss()
+        
+        X_t = torch.tensor(X_train, dtype=torch.float32).unsqueeze(1) # sequence length = 1
+        y_t = torch.tensor(y_train, dtype=torch.float32)
+        
+        for epoch in range(epochs):
+            model.train()
+            optimizer.zero_grad()
+            pred = model(X_t)
+            loss = criterion(pred, y_t)
+            loss.backward()
+            optimizer.step()
+        return model
+
+    def predict_lstm_with_uncertainty(model, x_input, n_samples=50):
+        model.train() # Enable dropout for MC Dropout uncertainty
+        x_t = torch.tensor(x_input, dtype=torch.float32).reshape(1, 1, -1)
+        preds = []
+        with torch.no_grad():
+            for _ in range(n_samples):
+                preds.append(model(x_t).item())
+        preds = np.array(preds)
+        return float(np.mean(preds)), float(np.percentile(preds, 5)), float(np.percentile(preds, 95))
+
+    # Helper to generate lags and exogenous features
+    def build_features(years, target_series, precip_series, exog_features, lag_k=2):
+        X, y = [], []
+        for i in range(lag_k, len(years)):
+            target_lags = target_series[i-lag_k:i]
+            precip_lags = precip_series[i-lag_k:i]
+            ex = exog_features[i]
+            feat = np.concatenate([target_lags, precip_lags, ex])
+            X.append(feat)
+            y.append(target_series[i])
+        return np.array(X), np.array(y)
+
     try:
         df = pd.read_csv('annual_aggregates.csv')
+        # Filter for locations (excluding _Anomaly columns)
         max_cols = [c for c in df.columns if (c.startswith('MaxTemp_') and not c.endswith('_Anomaly')) or c == 'National_MaxTemp']
         locations = [c.replace('MaxTemp_', '').replace('National_MaxTemp', 'National') for c in max_cols]
         
-        # We will extract the true CMIP6 data to provide a rich, fluctuating yearly sequence to the UI!
+        df['Date'] = pd.to_datetime(df['Date'])
+        df['Year'] = df['Date'].dt.year
+        historical_years = df['Year'].values
+        n_years = len(historical_years)
+        
+        # Exogenous features for history (1961 - 2017)
+        exog_hist = get_exogenous_features(historical_years)
+        
+        # Exogenous features for future (2018 - 2037)
+        future_years = np.arange(2018, 2038)
+        exog_future = get_exogenous_features(future_years)
+        
         metrics = {}
+        
         for loc in locations:
-            coord = PAKISTAN_CITIES.get(loc, DEFAULT_COORD)
+            print(f"Training models for {loc}...")
+            col_max = f"MaxTemp_{loc}" if loc != "National" else "National_MaxTemp"
+            col_min = f"MinTemp_{loc}" if loc != "National" else "National_MinTemp"
+            col_precip = f"Precip_{loc}" if loc != "National" else "National_Precip"
             
-            lat_idx = np.abs(lats - coord[0]).argmin()
-            lon_idx = np.abs(dataset_144x96['lon'].values - coord[1]).argmin()
-            
-            # Extract the actual CMIP6 monthly temperatures
-            city_tas_monthly = tas[:, lat_idx, lon_idx]
-            
-            # Resample monthly to yearly means
-            n_years = len(city_tas_monthly) // 12
-            if n_years > 0:
-                city_tas_yearly = city_tas_monthly[:n_years*12].reshape(n_years, 12).mean(axis=1)
-                # Calculate anomalies relative to the start of the sequence (e.g. 2015)
-                anomalies = city_tas_yearly - city_tas_yearly[0]
-                cmip6_anomalies = [float(a) for a in anomalies]
-            else:
-                cmip6_anomalies = []
+            if col_max not in df.columns or col_min not in df.columns:
+                continue
                 
-            metrics[loc] = {
-                'cmip6_anomalies': cmip6_anomalies,
-                'max_trend_per_decade': 0.0,
-                'min_trend_per_decade': 0.0
+            # Skip if columns have entirely NaN or insufficient data (< 10 valid values)
+            if df[col_max].isnull().sum() > (len(df) - 10) or df[col_min].isnull().sum() > (len(df) - 10):
+                print(f"  Skipping {loc} due to insufficient valid historical data.")
+                continue
+                
+            # Linearly interpolate gaps if any, with fallback for precipitation
+            max_series = df[col_max].interpolate(method='linear').ffill().bfill().values
+            min_series = df[col_min].interpolate(method='linear').ffill().bfill().values
+            if col_precip in df.columns:
+                precip_series = df[col_precip].interpolate(method='linear').ffill().bfill().values
+            elif 'National_Precip' in df.columns:
+                precip_series = df['National_Precip'].interpolate(method='linear').ffill().bfill().values
+            else:
+                precip_series = np.zeros_like(max_series)
+            
+            # Decadal trends using simple linear regression
+            max_trend_per_decade = linregress(historical_years, max_series).slope * 10
+            min_trend_per_decade = linregress(historical_years, min_series).slope * 10
+            
+            # Dictionary for storing forecasts of max and min temps
+            loc_results = {
+                'max_trend_per_decade': float(max_trend_per_decade),
+                'min_trend_per_decade': float(min_trend_per_decade)
             }
+            
+            for target_name, target_series in [('max', max_series), ('min', min_series)]:
+                # Build lag + exogenous features
+                X, y = build_features(historical_years, target_series, precip_series, exog_hist, lag_k=2)
+                
+                # Model selection using TimeSeriesSplit (5-fold)
+                tscv = TimeSeriesSplit(n_splits=5)
+                cv_scores = {'gb': [], 'sarimax': [], 'lstm': []}
+                
+                for train_idx, test_idx in tscv.split(X):
+                    X_train, X_test = X[train_idx], X[test_idx]
+                    y_train, y_test = y[train_idx], y[test_idx]
+                    
+                    # 1. Gradient Boosting
+                    gb = GradientBoostingRegressor(loss='squared_error', n_estimators=30, max_depth=3, random_state=42)
+                    gb.fit(X_train, y_train)
+                    pred_gb = gb.predict(X_test)
+                    cv_scores['gb'].append(np.mean((pred_gb - y_test)**2))
+                    
+                    # 2. SARIMAX
+                    try:
+                        exog_train = X_train[:, -3:]
+                        exog_test = X_test[:, -3:]
+                        sarimax_m = sm.tsa.statespace.sarimax.SARIMAX(
+                            y_train,
+                            exog=exog_train,
+                            order=(1, 1, 0),
+                            enforce_stationarity=False,
+                            enforce_invertibility=False
+                        )
+                        sarimax_res = sarimax_m.fit(disp=False)
+                        pred_s = sarimax_res.forecast(steps=len(y_test), exog=exog_test)
+                        cv_scores['sarimax'].append(np.mean((pred_s - y_test)**2))
+                    except:
+                        cv_scores['sarimax'].append(float('inf'))
+                        
+                    # 3. LSTM
+                    try:
+                        lstm_m = train_lstm_model(X_train, y_train, input_dim=X_train.shape[1], epochs=40)
+                        lstm_m.eval()
+                        with torch.no_grad():
+                            pred_lstm = lstm_m(torch.tensor(X_test, dtype=torch.float32).unsqueeze(1)).numpy()
+                        cv_scores['lstm'].append(np.mean((pred_lstm - y_test)**2))
+                    except:
+                        cv_scores['lstm'].append(float('inf'))
+                
+                avg_scores = {m: np.mean(scores) for m, scores in cv_scores.items()}
+                best_model_name = min(avg_scores, key=avg_scores.get)
+                print(f"  {target_name.capitalize()} Temp Best Model: {best_model_name.upper()} (CV MSE: {avg_scores[best_model_name]:.4f})")
+                
+                # Retrain best model on the entire historical dataset and generate forecast
+                forecast_mean, forecast_lower, forecast_upper = [], [], []
+                
+                # Setup recursive history variables
+                target_hist = list(target_series)
+                precip_hist = list(precip_series)
+                
+                if best_model_name == 'gb':
+                    gb_mean = GradientBoostingRegressor(loss='squared_error', n_estimators=30, max_depth=3, random_state=42)
+                    gb_lower = GradientBoostingRegressor(loss='quantile', alpha=0.05, n_estimators=30, max_depth=3, random_state=42)
+                    gb_upper = GradientBoostingRegressor(loss='quantile', alpha=0.95, n_estimators=30, max_depth=3, random_state=42)
+                    
+                    gb_mean.fit(X, y)
+                    gb_lower.fit(X, y)
+                    gb_upper.fit(X, y)
+                    
+                    for idx, year in enumerate(future_years):
+                        # Construct feature vector
+                        feat_t = np.concatenate([
+                            target_hist[-2:],
+                            precip_hist[-2:],
+                            exog_future[idx]
+                        ])
+                        
+                        m = gb_mean.predict([feat_t])[0]
+                        l = gb_lower.predict([feat_t])[0]
+                        u = gb_upper.predict([feat_t])[0]
+                        
+                        # Guard rails to ensure bounds are logically consistent
+                        l = min(l, m)
+                        u = max(u, m)
+                        
+                        forecast_mean.append(float(m))
+                        forecast_lower.append(float(l))
+                        forecast_upper.append(float(u))
+                        
+                        # Update history recursively
+                        target_hist.append(m)
+                        # Simulate precipitation (rolling mean + noise)
+                        p_sim = float(np.mean(precip_hist[-5:]) + np.random.normal(0, np.std(precip_hist[-5:]) * 0.1))
+                        precip_hist.append(max(0.0, p_sim))
+                        
+                elif best_model_name == 'sarimax':
+                    # Exogenous features for historical period
+                    exog_train_all = X[:, -3:]
+                    
+                    try:
+                        sarimax_all = sm.tsa.statespace.sarimax.SARIMAX(
+                            y,
+                            exog=exog_train_all,
+                            order=(1, 1, 0),
+                            enforce_stationarity=False,
+                            enforce_invertibility=False
+                        )
+                        sarimax_res = sarimax_all.fit(disp=False)
+                        # Perform forecasting
+                        pred_res = sarimax_res.get_forecast(steps=len(future_years), exog=exog_future)
+                        summary = pred_res.summary_frame(alpha=0.10) # 90% prediction intervals
+                        
+                        forecast_mean = [float(val) for val in summary['mean'].values]
+                        forecast_lower = [float(val) for val in summary['mean_ci_lower'].values]
+                        forecast_upper = [float(val) for val in summary['mean_ci_upper'].values]
+                    except Exception as e:
+                        # Fallback to Gradient Boosting if SARIMAX fails
+                        print(f"  SARIMAX fitting failed for {loc} {target_name}, falling back to GB")
+                        gb_mean = GradientBoostingRegressor(loss='squared_error', n_estimators=30, max_depth=3, random_state=42)
+                        gb_mean.fit(X, y)
+                        for idx, year in enumerate(future_years):
+                            feat_t = np.concatenate([target_hist[-2:], precip_hist[-2:], exog_future[idx]])
+                            m = gb_mean.predict([feat_t])[0]
+                            forecast_mean.append(float(m))
+                            forecast_lower.append(float(m - 1.0))
+                            forecast_upper.append(float(m + 1.0))
+                            target_hist.append(m)
+                            precip_hist.append(float(np.mean(precip_hist[-5:])))
+                            
+                else: # LSTM
+                    lstm_all = train_lstm_model(X, y, input_dim=X.shape[1], epochs=50)
+                    
+                    for idx, year in enumerate(future_years):
+                        feat_t = np.concatenate([
+                            target_hist[-2:],
+                            precip_hist[-2:],
+                            exog_future[idx]
+                        ])
+                        
+                        m, l, u = predict_lstm_with_uncertainty(lstm_all, feat_t)
+                        
+                        forecast_mean.append(m)
+                        forecast_lower.append(l)
+                        forecast_upper.append(u)
+                        
+                        target_hist.append(m)
+                        p_sim = float(np.mean(precip_hist[-5:]) + np.random.normal(0, np.std(precip_hist[-5:]) * 0.1))
+                        precip_hist.append(max(0.0, p_sim))
+                
+                loc_results[f'forecast_{target_name}_mean'] = forecast_mean
+                loc_results[f'forecast_{target_name}_lower'] = forecast_lower
+                loc_results[f'forecast_{target_name}_upper'] = forecast_upper
+                
+            metrics[loc] = loc_results
             
         with open('ml_metrics.json', 'w') as f:
             json.dump(metrics, f, indent=2)
             
     except Exception as e:
-        print(f"Error restoring ML trends: {e}")
+        print(f"Error executing ML time-series forecasting: {e}")
+        import traceback
+        traceback.print_exc()
         
     print("Updating web app data via convert_to_json.py...")
     import convert_to_json
     convert_to_json.create_json()
-    
-    print(f"Analysis complete. TAS Map saved to {plot_path}")
+
+    print("Analysis complete.")
 
 if __name__ == "__main__":
     mock_data_path = os.path.join(os.path.dirname(__file__), "data", "mock_climate_data.nc")

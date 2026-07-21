@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { 
-  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Cell 
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Cell,
+  ComposedChart, Area
 } from 'recharts';
 import { TrendingUp, Thermometer, CloudRain, AlertTriangle } from 'lucide-react';
 import climateData from './data/climate.json';
@@ -14,11 +15,17 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       <div className="bg-slate-900 border border-slate-700 p-3 rounded-lg shadow-xl">
         <p className="text-slate-300 font-semibold mb-2">{label}</p>
         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-        {payload.map((entry: any, index: number) => (
-          <p key={index} style={{ color: entry.color }} className="text-sm">
-            {entry.name}: {entry.value}°C
-          </p>
-        ))}
+        {payload.map((entry: any, index: number) => {
+          let valStr = `${entry.value}°C`;
+          if (Array.isArray(entry.value)) {
+            valStr = `${entry.value[0]}°C - ${entry.value[1]}°C`;
+          }
+          return (
+            <p key={index} style={{ color: entry.color || '#cbd5e1' }} className="text-sm">
+              {entry.name}: {valStr}
+            </p>
+          );
+        })}
       </div>
     );
   }
@@ -28,6 +35,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('historical');
   const [selectedLocation, setSelectedLocation] = useState('National');
+  const [showMax, setShowMax] = useState(true);
+  const [showMin, setShowMin] = useState(true);
+  const [showBands, setShowBands] = useState(true);
 
   // Ensure data exists for safety
   const locationData = climateData.data[selectedLocation as keyof typeof climateData.data] || climateData.data['National'];
@@ -149,17 +159,70 @@ export default function Dashboard() {
 
             {activeTab === 'forecast' && (
               <>
-                <h2 className="text-xl font-semibold mb-6 flex items-center gap-2"><TrendingUp size={20} className="text-emerald-400"/> 20-Year Predictive Forecast</h2>
-                <ResponsiveContainer width="100%" height="90%">
-                  <LineChart data={forecast} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                  <h2 className="text-xl font-semibold flex items-center gap-2">
+                    <TrendingUp size={20} className="text-emerald-400"/> 20-Year Predictive Forecast
+                  </h2>
+                  <div className="flex flex-wrap gap-2 bg-slate-900/60 p-1 border border-slate-800 rounded-lg">
+                    <button 
+                      onClick={() => setShowMax(!showMax)} 
+                      className={`px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1.5 transition-all ${showMax ? 'bg-red-500/25 text-red-300 border border-red-500/30' : 'text-slate-500 hover:text-slate-400 border border-transparent'}`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${showMax ? 'bg-red-400 animate-pulse' : 'bg-slate-700'}`}></span>
+                      Max Temp
+                    </button>
+                    <button 
+                      onClick={() => setShowMin(!showMin)} 
+                      className={`px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1.5 transition-all ${showMin ? 'bg-blue-500/25 text-blue-300 border border-blue-500/30' : 'text-slate-500 hover:text-slate-400 border border-transparent'}`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${showMin ? 'bg-blue-400 animate-pulse' : 'bg-slate-700'}`}></span>
+                      Min Temp
+                    </button>
+                    <button 
+                      onClick={() => setShowBands(!showBands)} 
+                      className={`px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1.5 transition-all ${showBands ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/30' : 'text-slate-500 hover:text-slate-400 border border-transparent'}`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${showBands ? 'bg-emerald-400 animate-pulse' : 'bg-slate-700'}`}></span>
+                      90% CI Bands
+                    </button>
+                  </div>
+                </div>
+                <ResponsiveContainer width="100%" height="88%">
+                  <ComposedChart data={forecast} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                    <defs>
+                      <linearGradient id="maxBandGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.25}/>
+                        <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.03}/>
+                      </linearGradient>
+                      <linearGradient id="minBandGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.25}/>
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.03}/>
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                     <XAxis dataKey="year" stroke="#94a3b8" />
                     <YAxis stroke="#94a3b8" domain={['auto', 'auto']} />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
-                    <Line type="monotone" dataKey="historicalMax" name="Historical Max" stroke="#ef4444" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="forecastMax" name="Forecast Max" stroke="#f59e0b" strokeWidth={3} strokeDasharray="5 5" dot={false} />
-                  </LineChart>
+                    {showBands && showMax && (
+                      <Area type="monotone" dataKey="forecastMaxRange" stroke="none" fill="url(#maxBandGrad)" name="Max Temp 90% CI" />
+                    )}
+                    {showBands && showMin && (
+                      <Area type="monotone" dataKey="forecastMinRange" stroke="none" fill="url(#minBandGrad)" name="Min Temp 90% CI" />
+                    )}
+                    {showMax && (
+                      <Line type="monotone" dataKey="historicalMax" name="Historical Max" stroke="#ef4444" strokeWidth={2} dot={false} />
+                    )}
+                    {showMax && (
+                      <Line type="monotone" dataKey="forecastMax" name="Forecast Max" stroke="#f59e0b" strokeWidth={3} strokeDasharray="5 5" dot={false} />
+                    )}
+                    {showMin && (
+                      <Line type="monotone" dataKey="historicalMin" name="Historical Min" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                    )}
+                    {showMin && (
+                      <Line type="monotone" dataKey="forecastMin" name="Forecast Min" stroke="#0ea5e9" strokeWidth={3} strokeDasharray="5 5" dot={false} />
+                    )}
+                  </ComposedChart>
                 </ResponsiveContainer>
               </>
             )}
@@ -198,15 +261,62 @@ export default function Dashboard() {
             )}
 
             {activeTab === 'forecast' && (
-              <div className="space-y-4 text-slate-400 leading-relaxed">
-                <p>
-                  Using machine learning regression models, we projected the historical patterns into the future (2018 - 2037).
-                </p>
-                <p>
-                  The dashed orange line represents the forecasted maximum temperatures. The model predicts a continuation of the {metrics.maxTrendPerDecade > 0 ? '+' : ''}{metrics.maxTrendPerDecade}°C per decade trend.
-                </p>
-                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
-                  <p className="text-emerald-300 font-medium">If this trend holds, by 2037 average maximum temperatures will routinely sit nearly 1°C higher than the 1961 baseline.</p>
+              <div className="space-y-6">
+                <div>
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Model Configuration</h4>
+                  <div className="grid grid-cols-2 gap-3 text-xs bg-slate-900/50 p-3 rounded-lg border border-slate-800">
+                    <div>
+                      <p className="text-slate-500">Selected Pipeline</p>
+                      <p className="text-slate-200 font-semibold mt-0.5">Ensemble Auto-ML</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500">Cross-Validation</p>
+                      <p className="text-slate-200 font-semibold mt-0.5">5-Fold TimeSeriesSplit</p>
+                    </div>
+                    <div className="col-span-2 border-t border-slate-800 pt-2 mt-1">
+                      <p className="text-slate-500">Integrated Driver Features</p>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        <span className="bg-slate-850 text-slate-300 px-1.5 py-0.5 rounded text-[10px] border border-slate-800">CO2 (ppm)</span>
+                        <span className="bg-slate-850 text-slate-300 px-1.5 py-0.5 rounded text-[10px] border border-slate-800">Aerosols (SAOD)</span>
+                        <span className="bg-slate-850 text-slate-300 px-1.5 py-0.5 rounded text-[10px] border border-slate-800">ENSO (ONI)</span>
+                        <span className="bg-slate-850 text-slate-300 px-1.5 py-0.5 rounded text-[10px] border border-slate-800">Lags (t-1, t-2)</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">2037 Projected Temperature Bounds</h4>
+                  <div className="space-y-3">
+                    <div className="bg-gradient-to-r from-red-500/10 to-orange-500/10 p-3 rounded-lg border border-red-500/20">
+                      <p className="text-xs text-red-400/80 font-medium">Max Temp Projection</p>
+                      <div className="flex justify-between items-baseline mt-1">
+                        <span className="text-xl font-bold text-red-100">
+                          {forecast && forecast.length > 0 ? `${forecast[forecast.length - 1].forecastMax}°C` : 'N/A'}
+                        </span>
+                        <span className="text-xs text-red-400">
+                          90% CI: {forecast && forecast.length > 0 ? `[${forecast[forecast.length - 1].forecastMaxLower}°C - ${forecast[forecast.length - 1].forecastMaxUpper}°C]` : ''}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-gradient-to-r from-blue-500/10 to-sky-500/10 p-3 rounded-lg border border-blue-500/20">
+                      <p className="text-xs text-blue-400/80 font-medium">Min Temp Projection</p>
+                      <div className="flex justify-between items-baseline mt-1">
+                        <span className="text-xl font-bold text-blue-100">
+                          {forecast && forecast.length > 0 ? `${forecast[forecast.length - 1].forecastMin}°C` : 'N/A'}
+                        </span>
+                        <span className="text-xs text-blue-400">
+                          90% CI: {forecast && forecast.length > 0 ? `[${forecast[forecast.length - 1].forecastMinLower}°C - ${forecast[forecast.length - 1].forecastMinUpper}°C]` : ''}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs leading-relaxed text-slate-400">
+                  <p className="text-emerald-300 font-medium mb-1">Decadal Trends</p>
+                  Maximum temperatures are predicted to trend at <span className="text-slate-100 font-semibold">{metrics.maxTrendPerDecade > 0 ? '+' : ''}{metrics.maxTrendPerDecade}°C</span> per decade. Use the toggles to isolate trend lines and confidence bands for detailed validation.
                 </div>
               </div>
             )}
