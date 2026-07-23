@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { 
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Cell,
-  ComposedChart, Area
+  ComposedChart, Area, ReferenceArea
 } from 'recharts';
 import { TrendingUp, Thermometer, CloudRain, AlertTriangle } from 'lucide-react';
 import climateData from './data/climate.json';
@@ -44,6 +44,36 @@ export default function Dashboard() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { historical, forecast, metrics } = locationData as any;
   const locations = climateData.locations;
+
+  const { baselineMean, baselineStdDev } = React.useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const baselineData = historical.filter((h: any) => h.year >= 1961 && h.year <= 1990);
+    if (baselineData.length === 0) return { baselineMean: 0, baselineStdDev: 1 };
+    
+    const mean = baselineData.reduce((sum: number, h: any) => sum + h.maxTemp, 0) / baselineData.length;
+    const anomalies = baselineData.map((h: any) => h.anomaly);
+    const variance = anomalies.reduce((sum: number, val: number) => sum + val * val, 0) / anomalies.length;
+    
+    return { baselineMean: mean, baselineStdDev: Math.sqrt(variance) };
+  }, [historical]);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const renderZScoreDot = (props: any) => {
+    const { cx, cy, payload, value } = props;
+    if (value == null || cx == null || cy == null) return null;
+    
+    let anomaly = payload.anomaly;
+    if (anomaly === undefined) {
+       anomaly = value - baselineMean;
+    }
+    
+    const zScore = Math.abs(anomaly / baselineStdDev);
+    let dotColor = '#cbd5e1'; 
+    if (zScore > 2) dotColor = '#dc2626'; 
+    else if (zScore > 1) dotColor = '#f59e0b';
+
+    return <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={4} fill={dotColor} stroke="#0f172a" strokeWidth={1.5} />;
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans p-6">
@@ -127,7 +157,9 @@ export default function Dashboard() {
                     <YAxis stroke="#94a3b8" domain={['auto', 'auto']} />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
-                    <Line type="monotone" dataKey="maxTemp" name="Max Temp" stroke="#ef4444" strokeWidth={2} dot={false} activeDot={{ r: 8 }} />
+                    <ReferenceArea y1={baselineMean - baselineStdDev} y2={baselineMean + baselineStdDev} fill="#94a3b8" fillOpacity={0.15} />
+                    <ReferenceLine y={baselineMean} stroke="#94a3b8" strokeDasharray="3 3" opacity={0.4} />
+                    <Line type="monotone" dataKey="maxTemp" name="Max Temp" stroke="#ef4444" strokeWidth={2} dot={renderZScoreDot} activeDot={{ r: 8 }} />
                     <Line type="monotone" dataKey="minTemp" name="Min Temp" stroke="#3b82f6" strokeWidth={2} dot={false} activeDot={{ r: 8 }} />
                   </LineChart>
                 </ResponsiveContainer>
@@ -147,9 +179,14 @@ export default function Dashboard() {
                     <Bar dataKey="anomaly" name="Anomaly">
                       {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        historical.map((entry: any, index: number) => (
-                          <Cell key={`cell-${index}`} fill={entry.anomaly > 0 ? '#ef4444' : '#3b82f6'} />
-                        ))
+                        historical.map((entry: any, index: number) => {
+                          const zScore = Math.abs(entry.anomaly / baselineStdDev);
+                          let barColor = '#cbd5e1'; // <= 1: Light Gray (Neutral)
+                          if (zScore > 2) barColor = '#dc2626'; // > 2: Crimson Red (Extreme anomaly)
+                          else if (zScore > 1) barColor = '#f59e0b'; // > 1: Yellow/Orange (Mild variation)
+
+                          return <Cell key={`cell-${index}`} fill={barColor} />;
+                        })
                       }
                     </Bar>
                   </BarChart>
@@ -210,11 +247,13 @@ export default function Dashboard() {
                     {showBands && showMin && (
                       <Area type="monotone" dataKey="forecastMinRange" stroke="none" fill="url(#minBandGrad)" name="Min Temp 90% CI" />
                     )}
+                    {showMax && <ReferenceArea y1={baselineMean - baselineStdDev} y2={baselineMean + baselineStdDev} fill="#94a3b8" fillOpacity={0.15} />}
+                    {showMax && <ReferenceLine y={baselineMean} stroke="#94a3b8" strokeDasharray="3 3" opacity={0.4} />}
                     {showMax && (
-                      <Line type="monotone" dataKey="historicalMax" name="Historical Max" stroke="#ef4444" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="historicalMax" name="Historical Max" stroke="#ef4444" strokeWidth={2} dot={renderZScoreDot} />
                     )}
                     {showMax && (
-                      <Line type="monotone" dataKey="forecastMax" name="Forecast Max" stroke="#f59e0b" strokeWidth={3} strokeDasharray="5 5" dot={false} />
+                      <Line type="monotone" dataKey="forecastMax" name="Forecast Max" stroke="#f59e0b" strokeWidth={3} strokeDasharray="5 5" dot={renderZScoreDot} />
                     )}
                     {showMin && (
                       <Line type="monotone" dataKey="historicalMin" name="Historical Min" stroke="#3b82f6" strokeWidth={2} dot={false} />
@@ -240,6 +279,10 @@ export default function Dashboard() {
                 <p>
                   We observe high inter-annual variability, yet a steady upward trajectory in the maximum temperatures. This indicates a consistent shift towards a hotter climate overall.
                 </p>
+                <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg mb-4">
+                  <p className="text-blue-300 font-medium mb-1">The Baseline Corridor</p>
+                  <p className="text-sm">The subtle shaded background band represents the &quot;normal&quot; temperature range based on the 1961-1990 baseline mean (±1 standard deviation). When the temperature data points break out above this corridor, they change color to instantly highlight mild or extreme anomaly jumps.</p>
+                </div>
                 <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
                   <p className="text-blue-300 font-medium">Notice how minimum temperatures have remained relatively stable compared to the sharp rise in maximums.</p>
                 </div>
@@ -251,11 +294,19 @@ export default function Dashboard() {
                 <p>
                   Temperature anomalies map how much warmer or cooler a specific year was compared to the 30-year baseline period (1961 - 1990).
                 </p>
+                <div className="p-4 bg-slate-900/60 border border-slate-800 rounded-lg">
+                  <p className="text-slate-300 font-medium mb-3">Z-Score Color Baseline</p>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-slate-300"></span> Neutral (|Z| ≤ 1)</li>
+                    <li className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-[#f59e0b]"></span> Mild variation (1 &lt; |Z| ≤ 2)</li>
+                    <li className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-[#dc2626]"></span> Extreme anomaly (|Z| &gt; 2)</li>
+                  </ul>
+                </div>
                 <p>
-                  The sea of red bars on the right side of the chart visually confirms that nearly every year since 1995 has been significantly hotter than the historical average.
+                  The intense red bars on the right side of the chart visually highlight years where the temperature experienced sudden extreme jumps relative to the baseline variations.
                 </p>
                 <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-lg">
-                  <p className="text-orange-300 font-medium">This acceleration of positive anomalies is a primary hallmark of global warming.</p>
+                  <p className="text-orange-300 font-medium">This acceleration of extreme anomalies is a primary hallmark of global warming.</p>
                 </div>
               </div>
             )}
