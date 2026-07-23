@@ -45,16 +45,30 @@ export default function Dashboard() {
   const { historical, forecast, metrics } = locationData as any;
   const locations = climateData.locations;
 
-  const { baselineMean, baselineStdDev } = React.useMemo(() => {
+  const { baselineMean, baselineStdDev, shiftYear } = React.useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const baselineData = historical.filter((h: any) => h.year >= 1961 && h.year <= 1990);
-    if (baselineData.length === 0) return { baselineMean: 0, baselineStdDev: 1 };
+    if (baselineData.length === 0) return { baselineMean: 0, baselineStdDev: 1, shiftYear: 1998 };
     
     const mean = baselineData.reduce((sum: number, h: any) => sum + h.maxTemp, 0) / baselineData.length;
     const anomalies = baselineData.map((h: any) => h.anomaly);
     const variance = anomalies.reduce((sum: number, val: number) => sum + val * val, 0) / anomalies.length;
+    const stdDev = Math.sqrt(variance);
     
-    return { baselineMean: mean, baselineStdDev: Math.sqrt(variance) };
+    // Dynamically calculate the year where fluctuation consistently increased (5-year rolling avg anomaly > stdDev)
+    let detectedYear = 1998;
+    for (let i = 0; i < historical.length - 5; i++) {
+       if (historical[i].year >= 1985) {
+          const next5 = historical.slice(i, i + 5);
+          const avgAnomaly = next5.reduce((sum: number, h: any) => sum + h.anomaly, 0) / 5;
+          if (avgAnomaly > stdDev) {
+             detectedYear = historical[i].year;
+             break;
+          }
+       }
+    }
+    
+    return { baselineMean: mean, baselineStdDev: stdDev, shiftYear: detectedYear };
   }, [historical]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -157,6 +171,8 @@ export default function Dashboard() {
                     <YAxis stroke="#94a3b8" domain={['auto', 'auto']} />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
+                    <ReferenceArea x1={shiftYear} fill="#f59e0b" fillOpacity={0.08} />
+                    <ReferenceLine x={shiftYear} stroke="#f59e0b" strokeDasharray="5 5" label={{ value: `Fluctuation Increase (${shiftYear})`, position: 'insideTopLeft', fill: '#f59e0b', fontSize: 12, offset: 10 }} />
                     <ReferenceArea y1={baselineMean - baselineStdDev} y2={baselineMean + baselineStdDev} fill="#94a3b8" fillOpacity={0.15} />
                     <ReferenceLine y={baselineMean} stroke="#94a3b8" strokeDasharray="3 3" opacity={0.4} />
                     <Line type="monotone" dataKey="maxTemp" name="Max Temp" stroke="#ef4444" strokeWidth={2} dot={renderZScoreDot} activeDot={{ r: 8 }} />
@@ -175,7 +191,10 @@ export default function Dashboard() {
                     <XAxis dataKey="year" stroke="#94a3b8" />
                     <YAxis stroke="#94a3b8" />
                     <Tooltip content={<CustomTooltip />} />
-                    <ReferenceLine y={0} stroke="#cbd5e1" />
+                    <ReferenceArea x1={shiftYear} fill="#f59e0b" fillOpacity={0.08} />
+                    <ReferenceLine x={shiftYear} stroke="#f59e0b" strokeDasharray="5 5" label={{ value: `Fluctuation Increase (${shiftYear})`, position: 'insideTopLeft', fill: '#f59e0b', fontSize: 12, offset: 10 }} />
+                    <ReferenceArea y1={-baselineStdDev} y2={baselineStdDev} fill="#94a3b8" fillOpacity={0.15} />
+                    <ReferenceLine y={0} stroke="#94a3b8" strokeDasharray="3 3" opacity={0.8} />
                     <Bar dataKey="anomaly" name="Anomaly">
                       {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -241,6 +260,8 @@ export default function Dashboard() {
                     <YAxis stroke="#94a3b8" domain={['auto', 'auto']} />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
+                    <ReferenceArea x1={shiftYear} fill="#f59e0b" fillOpacity={0.08} />
+                    <ReferenceLine x={shiftYear} stroke="#f59e0b" strokeDasharray="5 5" label={{ value: `Fluctuation Increase (${shiftYear})`, position: 'insideTopLeft', fill: '#f59e0b', fontSize: 12, offset: 10 }} />
                     {showBands && showMax && (
                       <Area type="monotone" dataKey="forecastMaxRange" stroke="none" fill="url(#maxBandGrad)" name="Max Temp 90% CI" />
                     )}
@@ -268,9 +289,22 @@ export default function Dashboard() {
           </div>
 
           {/* Explanation Area */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md">
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md flex flex-col">
             <h3 className="text-xl font-semibold mb-4 text-slate-100">Insights & Analysis</h3>
             
+            {/* Markers Explanation (Common) */}
+            <div className="mb-6 p-4 bg-slate-900/60 border border-slate-700/50 rounded-lg text-sm shadow-sm">
+              <h4 className="text-slate-200 font-semibold mb-3">Chart Key & Baseline Information</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4 text-slate-400">
+                <div className="flex items-center gap-2"><span className="w-4 h-0.5 bg-red-500"></span> <span><b>Max Temp:</b> Historical & Forecast</span></div>
+                <div className="flex items-center gap-2"><span className="w-4 h-0.5 bg-blue-500"></span> <span><b>Min Temp:</b> Historical & Forecast</span></div>
+                <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-red-600"></span> <span><b>Red Dot/Bar:</b> Extreme anomaly</span></div>
+                <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-orange-500"></span> <span><b>Orange Dot/Bar:</b> Mild anomaly</span></div>
+                <div className="flex items-center gap-2"><span className="w-4 h-0 border-t-2 border-slate-400 border-dashed"></span> <span><b>Dotted Line:</b> Baseline Mean (Normal)</span></div>
+                <div className="flex items-center gap-2"><span className="w-4 h-0 border-t-2 border-orange-500 border-dashed"></span> <span><b>Orange Dashed Line:</b> Fluctuation Increase</span></div>
+              </div>
+            </div>
+
             {activeTab === 'historical' && (
               <div className="space-y-4 text-slate-400 leading-relaxed">
                 <p>
