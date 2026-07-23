@@ -71,6 +71,7 @@ def create_json():
         last_year = last_point['year']
         current_max = last_point['maxTemp']
         current_min = last_point['minTemp']
+        current_peak = last_point.get('peakMaxTemp', current_max + 12.0)
         
         forecast_data = []
         # Include historical data for continuous line
@@ -82,28 +83,41 @@ def create_json():
                 "summerMaxTemp": d.get('summerMaxTemp'),
                 "historicalMin": d['minTemp'],
                 "forecastMax": None,
+                "forecastPeak": None,
                 "forecastMin": None,
                 "forecastMaxLower": None,
                 "forecastMaxUpper": None,
+                "forecastPeakLower": None,
+                "forecastPeakUpper": None,
                 "forecastMinLower": None,
                 "forecastMinUpper": None,
                 "forecastMaxRange": None,
+                "forecastPeakRange": None,
                 "forecastMinRange": None
             })
             
         # Link transition point (last year of history)
         forecast_data[-1]["forecastMax"] = current_max
+        forecast_data[-1]["forecastPeak"] = current_peak
         forecast_data[-1]["forecastMin"] = current_min
         forecast_data[-1]["forecastMaxLower"] = current_max
         forecast_data[-1]["forecastMaxUpper"] = current_max
+        forecast_data[-1]["forecastPeakLower"] = current_peak
+        forecast_data[-1]["forecastPeakUpper"] = current_peak
         forecast_data[-1]["forecastMinLower"] = current_min
         forecast_data[-1]["forecastMinUpper"] = current_min
         forecast_data[-1]["forecastMaxRange"] = [current_max, current_max]
+        forecast_data[-1]["forecastPeakRange"] = [current_peak, current_peak]
         forecast_data[-1]["forecastMinRange"] = [current_min, current_min]
         
         forecast_max_mean = loc_metrics.get('forecast_max_mean', [])
         forecast_max_lower = loc_metrics.get('forecast_max_lower', [])
         forecast_max_upper = loc_metrics.get('forecast_max_upper', [])
+        
+        forecast_peak_mean = loc_metrics.get('forecast_peak_mean', [])
+        forecast_peak_lower = loc_metrics.get('forecast_peak_lower', [])
+        forecast_peak_upper = loc_metrics.get('forecast_peak_upper', [])
+        
         forecast_min_mean = loc_metrics.get('forecast_min_mean', [])
         forecast_min_lower = loc_metrics.get('forecast_min_lower', [])
         forecast_min_upper = loc_metrics.get('forecast_min_upper', [])
@@ -113,6 +127,11 @@ def create_json():
             f_max = round(forecast_max_mean[i], 2)
             f_max_l = round(forecast_max_lower[i], 2)
             f_max_u = round(forecast_max_upper[i], 2)
+            
+            f_peak = round(forecast_peak_mean[i], 2) if i < len(forecast_peak_mean) else round(f_max + 12.0, 2)
+            f_peak_l = round(forecast_peak_lower[i], 2) if i < len(forecast_peak_lower) else f_peak - 1.5
+            f_peak_u = round(forecast_peak_upper[i], 2) if i < len(forecast_peak_upper) else f_peak + 1.5
+            
             f_min = round(forecast_min_mean[i], 2)
             f_min_l = round(forecast_min_lower[i], 2)
             f_min_u = round(forecast_min_upper[i], 2)
@@ -120,14 +139,20 @@ def create_json():
             forecast_data.append({
                 "year": year,
                 "historicalMax": None,
+                "peakMaxTemp": None,
+                "summerMaxTemp": None,
                 "historicalMin": None,
                 "forecastMax": f_max,
+                "forecastPeak": f_peak,
                 "forecastMin": f_min,
                 "forecastMaxLower": f_max_l,
                 "forecastMaxUpper": f_max_u,
+                "forecastPeakLower": f_peak_l,
+                "forecastPeakUpper": f_peak_u,
                 "forecastMinLower": f_min_l,
                 "forecastMinUpper": f_min_u,
                 "forecastMaxRange": [f_max_l, f_max_u],
+                "forecastPeakRange": [f_peak_l, f_peak_u],
                 "forecastMinRange": [f_min_l, f_min_u]
             })
             
@@ -136,6 +161,7 @@ def create_json():
             "forecast": forecast_data,
             "metrics": {
                 "maxTrendPerDecade": round(loc_metrics.get('max_trend_per_decade', 0), 3),
+                "peakTrendPerDecade": round(loc_metrics.get('peak_trend_per_decade', 0), 3),
                 "minTrendPerDecade": round(loc_metrics.get('min_trend_per_decade', 0), 3)
             }
         }

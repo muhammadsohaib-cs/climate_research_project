@@ -244,6 +244,7 @@ def run_ml_analysis(mock_data_path):
             col_max = f"MaxTemp_{loc}" if loc != "National" else "National_MaxTemp"
             col_min = f"MinTemp_{loc}" if loc != "National" else "National_MinTemp"
             col_precip = f"Precip_{loc}" if loc != "National" else "National_Precip"
+            col_peak = f"PeakMaxTemp_{loc}" if loc != "National" else "National_PeakMaxTemp"
             
             if col_max not in df.columns or col_min not in df.columns:
                 continue
@@ -256,6 +257,11 @@ def run_ml_analysis(mock_data_path):
             # Linearly interpolate gaps if any, with fallback for precipitation
             max_series = df[col_max].interpolate(method='linear').ffill().bfill().values
             min_series = df[col_min].interpolate(method='linear').ffill().bfill().values
+            if col_peak in df.columns:
+                peak_series = df[col_peak].interpolate(method='linear').ffill().bfill().values
+            else:
+                peak_series = max_series + 12.0
+                
             if col_precip in df.columns:
                 precip_series = df[col_precip].interpolate(method='linear').ffill().bfill().values
             elif 'National_Precip' in df.columns:
@@ -266,14 +272,16 @@ def run_ml_analysis(mock_data_path):
             # Decadal trends using simple linear regression
             max_trend_per_decade = linregress(historical_years, max_series).slope * 10
             min_trend_per_decade = linregress(historical_years, min_series).slope * 10
+            peak_trend_per_decade = linregress(historical_years, peak_series).slope * 10
             
-            # Dictionary for storing forecasts of max and min temps
+            # Dictionary for storing forecasts of max, min, and peak temps
             loc_results = {
                 'max_trend_per_decade': float(max_trend_per_decade),
-                'min_trend_per_decade': float(min_trend_per_decade)
+                'min_trend_per_decade': float(min_trend_per_decade),
+                'peak_trend_per_decade': float(peak_trend_per_decade)
             }
             
-            for target_name, target_series in [('max', max_series), ('min', min_series)]:
+            for target_name, target_series in [('max', max_series), ('min', min_series), ('peak', peak_series)]:
                 # Build lag + exogenous features
                 X, y = build_features(historical_years, target_series, precip_series, exog_hist, lag_k=2)
                 
