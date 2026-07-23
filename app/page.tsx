@@ -163,7 +163,7 @@ export default function Dashboard() {
           <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md h-[500px]">
             {activeTab === 'historical' && (
               <>
-                <h2 className="text-xl font-semibold mb-6 flex items-center gap-2"><Thermometer size={20} className="text-blue-400"/> Average Annual Temperatures</h2>
+                <h2 className="text-xl font-semibold mb-6 flex items-center gap-2"><Thermometer size={20} className="text-blue-400"/> Annual Average & Peak Extreme Temperatures</h2>
                 <ResponsiveContainer width="100%" height="90%">
                   <LineChart data={historical} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
@@ -175,8 +175,10 @@ export default function Dashboard() {
                     <ReferenceLine x={shiftYear} stroke="#f59e0b" strokeDasharray="5 5" label={{ value: `Fluctuation Increase (${shiftYear})`, position: 'insideTopLeft', fill: '#f59e0b', fontSize: 12, offset: 10 }} />
                     <ReferenceArea y1={baselineMean - baselineStdDev} y2={baselineMean + baselineStdDev} fill="#94a3b8" fillOpacity={0.15} />
                     <ReferenceLine y={baselineMean} stroke="#94a3b8" strokeDasharray="3 3" opacity={0.4} />
-                    <Line type="monotone" dataKey="maxTemp" name="Max Temp" stroke="#ef4444" strokeWidth={2} dot={renderZScoreDot} activeDot={{ r: 8 }} />
-                    <Line type="monotone" dataKey="minTemp" name="Min Temp" stroke="#3b82f6" strokeWidth={2} dot={false} activeDot={{ r: 8 }} />
+                    <Line type="monotone" dataKey="peakMaxTemp" name="Peak Extreme Max Temp" stroke="#f97316" strokeWidth={2.5} strokeDasharray="4 4" dot={{ r: 3, fill: '#f97316' }} activeDot={{ r: 8 }} />
+                    <Line type="monotone" dataKey="summerMaxTemp" name="Summer Season Mean (May-Jul)" stroke="#eab308" strokeWidth={2} dot={false} activeDot={{ r: 6 }} />
+                    <Line type="monotone" dataKey="maxTemp" name="Annual Daily Mean Max" stroke="#ef4444" strokeWidth={2} dot={renderZScoreDot} activeDot={{ r: 8 }} />
+                    <Line type="monotone" dataKey="minTemp" name="Annual Daily Mean Min" stroke="#3b82f6" strokeWidth={2} dot={false} activeDot={{ r: 8 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </>
@@ -270,6 +272,9 @@ export default function Dashboard() {
                     )}
                     {showMax && <ReferenceArea y1={baselineMean - baselineStdDev} y2={baselineMean + baselineStdDev} fill="#94a3b8" fillOpacity={0.15} />}
                     {showMax && <ReferenceLine y={baselineMean} stroke="#94a3b8" strokeDasharray="3 3" opacity={0.4} />}
+                    {showMax && (
+                      <Line type="monotone" dataKey="peakMaxTemp" name="Peak Extreme Max" stroke="#f97316" strokeWidth={2} strokeDasharray="4 4" dot={{ r: 2.5, fill: '#f97316' }} />
+                    )}
                     {showMax && (
                       <Line type="monotone" dataKey="historicalMax" name="Historical Max" stroke="#ef4444" strokeWidth={2} dot={renderZScoreDot} />
                     )}

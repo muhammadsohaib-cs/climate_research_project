@@ -54,8 +54,8 @@ def load_and_clean_data(file_path):
         cols_to_drop = [c for c in ['Empty_1', 'Empty_2', 'MaxTemp_Average', 'MinTemp_Average', 'Precip_Sum'] if c in df_raw.columns]
         df_raw.drop(columns=cols_to_drop, inplace=True)
         
-        df_raw.replace('***', np.nan, inplace=True)
-        df_raw.replace('----', np.nan, inplace=True)
+        sentinel_values = ['***', '----', -999, -999.0, 999, 999.0, -99, -99.0, -9999, -9999.0]
+        df_raw.replace(sentinel_values, np.nan, inplace=True)
         
         # Convert date to numeric
         df_raw.dropna(subset=['Year', 'Month', 'Day'], inplace=True)
@@ -75,6 +75,9 @@ def load_and_clean_data(file_path):
         
         for col in df_raw.columns:
             df_raw[col] = pd.to_numeric(df_raw[col], errors='coerce')
+            df_raw[col].replace(sentinel_values, np.nan, inplace=True)
+            if col.startswith('MaxTemp_') or col.startswith('MinTemp_'):
+                df_raw.loc[(df_raw[col] < -50) | (df_raw[col] > 60), col] = np.nan
             
         # Include all cities found in the sheet
         valid_cities = cities
@@ -98,10 +101,8 @@ def load_and_clean_data(file_path):
     
     print(f"Total valid cities kept: {len(df_combined.columns) // 3}")
     
-    print("Imputing missing values using interpolation...")
-    df_clean = df_combined.interpolate(method='time')
-    df_clean.bfill(inplace=True)
-    df_clean.ffill(inplace=True)
+    print("Imputing minor missing gaps (max 14 consecutive days) using time interpolation...")
+    df_clean = df_combined.interpolate(method='time', limit=14)
     
     return df_clean
 

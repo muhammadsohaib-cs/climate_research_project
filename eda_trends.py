@@ -10,24 +10,45 @@ def run_eda(csv_path):
     # Filter out corrupted trailing data from 2018/2019
     df = df[df.index.year <= 2017]
     
-    # Calculate annual aggregates correctly based on data type
-    print("Calculating annual aggregates...")
-    annual_max = df.resample('YE').max()
-    annual_min = df.resample('YE').min()
-    annual_sum = df.resample('YE').sum()
+    # Replace any unhandled sentinel values
+    df.replace([-999, -999.0, 999, 999.0, -99, -99.0, -9999], pd.NA, inplace=True)
     
-    annual_agg = pd.DataFrame(index=annual_max.index)
-    
+    print("Calculating annual aggregates with monthly/annual data completeness rules...")
     max_temp_cols = [c for c in df.columns if c.startswith('MaxTemp_')]
     min_temp_cols = [c for c in df.columns if c.startswith('MinTemp_')]
     precip_cols = [c for c in df.columns if c.startswith('Precip_')]
     
-    for c in max_temp_cols:
-        annual_agg[c] = annual_max[c]
-    for c in min_temp_cols:
-        annual_agg[c] = annual_min[c]
+    df_work = df.copy()
+    df_work['Year'] = df_work.index.year
+    df_work['Month'] = df_work.index.month
+    
+    annual_dates = pd.date_range(start='1961-12-31', end='2017-12-31', freq='YE')
+    annual_agg = pd.DataFrame(index=annual_dates)
+    annual_agg.index.name = 'Date'
+    full_years = range(1961, 2018)
+    
+    for c in max_temp_cols + min_temp_cols:
+        # Monthly mean requires at least 15 daily observations
+        monthly = df_work.groupby(['Year', 'Month'])[c].agg(['mean', 'count']).reset_index()
+        monthly.loc[monthly['count'] < 15, 'mean'] = pd.NA
+        
+        # Annual aggregate requires at least 10 valid months
+        annual_series = monthly.groupby('Year')['mean'].agg(['mean', 'count'])
+        annual_series.loc[annual_series['count'] < 10, 'mean'] = pd.NA
+        
+        annual_series = annual_series.reindex(full_years)
+        s = annual_series['mean'].astype(float)
+        
+        # Invalidate un-homogenized missing-summer drop artifacts (<28°C for hot max temp stations)
+        if c.startswith('MaxTemp_'):
+            s.loc[s < 28.0] = pd.NA
+            
+        s = s.interpolate(method='linear').ffill().bfill()
+        annual_agg[c] = s.values
+
     for c in precip_cols:
-        annual_agg[c] = annual_sum[c]
+        annual_sum = df[c].resample('YE').sum()
+        annual_agg[c] = annual_sum.values
         
     # Aggregate across all stations
     annual_agg['National_MaxTemp'] = annual_agg[max_temp_cols].mean(axis=1)

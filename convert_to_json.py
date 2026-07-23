@@ -25,6 +25,8 @@ def create_json():
         loc_data = []
         
         col_max = f"MaxTemp_{loc}" if loc != "National" else "National_MaxTemp"
+        col_peak = f"PeakMaxTemp_{loc}" if loc != "National" else "National_PeakMaxTemp"
+        col_summer = f"SummerMaxTemp_{loc}" if loc != "National" else "National_SummerMaxTemp"
         col_min = f"MinTemp_{loc}" if loc != "National" else "National_MinTemp"
         col_precip = f"Precip_{loc}" if loc != "National" else "National_Precip"
         
@@ -38,6 +40,8 @@ def create_json():
         for _, row in df.iterrows():
             year = int(row['Year'])
             max_temp = round(row[col_max], 2) if pd.notna(row[col_max]) else None
+            peak_max_temp = round(row[col_peak], 2) if col_peak in df.columns and pd.notna(row[col_peak]) else None
+            summer_max_temp = round(row[col_summer], 2) if col_summer in df.columns and pd.notna(row[col_summer]) else None
             min_temp = round(row[col_min], 2) if pd.notna(row[col_min]) else None
             precip = round(row[col_precip], 2) if col_precip in df.columns and pd.notna(row[col_precip]) else None
             
@@ -48,6 +52,8 @@ def create_json():
             loc_data.append({
                 "year": year,
                 "maxTemp": max_temp,
+                "peakMaxTemp": peak_max_temp,
+                "summerMaxTemp": summer_max_temp,
                 "minTemp": min_temp,
                 "precip": precip,
                 "anomaly": anomaly
@@ -72,6 +78,8 @@ def create_json():
             forecast_data.append({
                 "year": d['year'],
                 "historicalMax": d['maxTemp'],
+                "peakMaxTemp": d.get('peakMaxTemp'),
+                "summerMaxTemp": d.get('summerMaxTemp'),
                 "historicalMin": d['minTemp'],
                 "forecastMax": None,
                 "forecastMin": None,
