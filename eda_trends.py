@@ -1,124 +1,94 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 import os
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 
-def run_eda(csv_path):
-    print(f"Loading cleaned data from {csv_path}...")
-    df = pd.read_csv(csv_path, parse_dates=['Date'], index_col='Date')
-    
-    # Filter out corrupted trailing data from 2018/2019
-    df = df[df.index.year <= 2017]
-    
-    # Replace any unhandled sentinel values
-    df.replace([-999, -999.0, 999, 999.0, -99, -99.0, -9999], pd.NA, inplace=True)
-    
-    print("Calculating annual aggregates with monthly/annual data completeness rules...")
-    max_temp_cols = [c for c in df.columns if c.startswith('MaxTemp_')]
-    min_temp_cols = [c for c in df.columns if c.startswith('MinTemp_')]
-    precip_cols = [c for c in df.columns if c.startswith('Precip_')]
-    
-    df_work = df.copy()
-    df_work['Year'] = df_work.index.year
-    df_work['Month'] = df_work.index.month
-    
-    annual_dates = pd.date_range(start='1961-12-31', end='2017-12-31', freq='YE')
-    annual_agg = pd.DataFrame(index=annual_dates)
-    annual_agg.index.name = 'Date'
-    full_years = range(1961, 2018)
-    
-    for c in max_temp_cols + min_temp_cols:
-        # Monthly mean requires at least 15 daily observations
-        monthly = df_work.groupby(['Year', 'Month'])[c].agg(['mean', 'count']).reset_index()
-        monthly.loc[monthly['count'] < 15, 'mean'] = pd.NA
-        
-        # Annual aggregate requires at least 10 valid months
-        annual_series = monthly.groupby('Year')['mean'].agg(['mean', 'count'])
-        annual_series.loc[annual_series['count'] < 10, 'mean'] = pd.NA
-        
-        annual_series = annual_series.reindex(full_years)
-        s = annual_series['mean'].astype(float)
-        
-        # Invalidate un-homogenized missing-summer drop artifacts (<28°C for hot max temp stations)
-        if c.startswith('MaxTemp_'):
-            s.loc[s < 28.0] = pd.NA
-            
-        s = s.interpolate(method='linear').ffill().bfill()
-        annual_agg[c] = s.values
+import json
+import numpy as np
+import torch
+import matplotlib.pyplot as plt
+from data_prep import load_gridded_dataset, compute_climatological_zscores, create_5d_sequence_tensors, LAT_GRID, LON_GRID
+from model import ConvLSTMAutoencoder, TimeDistributedUNet
 
-    for c in precip_cols:
-        annual_sum = df[c].resample('YE').sum()
-        annual_agg[c] = annual_sum.values
-        
-    # Aggregate across all stations
-    annual_agg['National_MaxTemp'] = annual_agg[max_temp_cols].mean(axis=1)
-    annual_agg['National_MinTemp'] = annual_agg[min_temp_cols].mean(axis=1)
-    annual_agg['National_Precip'] = annual_agg[precip_cols].mean(axis=1)
-    
-    annual_mean = annual_agg # For backwards compatibility with plotting code below
-    
-    # Plot National Temperatures (Trend over time)
-    plt.figure(figsize=(12, 6))
-    plt.plot(annual_mean.index, annual_mean['National_MaxTemp'], label='Average Max Temp', alpha=0.5)
-    plt.plot(annual_mean.index, annual_mean['National_MinTemp'], label='Average Min Temp', alpha=0.5)
-    
-    # Rolling averages to smooth (5-year rolling)
-    plt.plot(annual_mean.index, annual_mean['National_MaxTemp'].rolling(window=5).mean(), label='Max Temp (5yr avg)', color='red', linewidth=2)
-    plt.plot(annual_mean.index, annual_mean['National_MinTemp'].rolling(window=5).mean(), label='Min Temp (5yr avg)', color='blue', linewidth=2)
-    
-    plt.title('Climate Change Trend: Average Annual Temperatures (1961-2017)')
-    plt.ylabel('Temperature (°C)')
-    plt.xlabel('Year')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    
-    out_dir = r"C:\Users\Laptop\.gemini\antigravity-ide\brain\ccda17ad-4b78-4669-b323-f50d4be9f803"
-    os.makedirs(out_dir, exist_ok=True)
-    temp_plot_path = os.path.join(out_dir, 'temperature_trends.png')
-    plt.savefig(temp_plot_path)
-    print(f"Saved temperature trends plot to {temp_plot_path}")
-    plt.close()
-    
-    # Temperature Anomalies
-    # Baseline 1961-1990
-    baseline_max = annual_mean.loc['1961-01-01':'1990-12-31', 'National_MaxTemp'].mean()
-    baseline_min = annual_mean.loc['1961-01-01':'1990-12-31', 'National_MinTemp'].mean()
-    
-    annual_mean['MaxTemp_Anomaly'] = annual_mean['National_MaxTemp'] - baseline_max
-    annual_mean['MinTemp_Anomaly'] = annual_mean['National_MinTemp'] - baseline_min
-    
-    plt.figure(figsize=(12, 6))
-    plt.bar(annual_mean.index.year, annual_mean['MaxTemp_Anomaly'], 
-            color=['red' if x > 0 else 'blue' for x in annual_mean['MaxTemp_Anomaly']], alpha=0.7)
-    
-    plt.title('Maximum Temperature Anomalies (Baseline: 1961-1990)')
-    plt.ylabel('Temperature Anomaly (°C)')
-    plt.xlabel('Year')
-    plt.axhline(0, color='black', linewidth=1)
-    plt.grid(True, alpha=0.3)
-    anomaly_plot_path = os.path.join(out_dir, 'temperature_anomalies.png')
-    plt.savefig(anomaly_plot_path)
-    print(f"Saved anomalies plot to {anomaly_plot_path}")
-    plt.close()
+def generate_evaluation_diagnostics():
+    print("=== Generating Deep Learning Diagnostics & Lead-Time RMSE Curves ===")
+    grid_tensor, years = load_gridded_dataset()
+    norm_tensor, mu_clim, sigma_clim = compute_climatological_zscores(grid_tensor, years)
 
-    # Precipitation Trends
-    plt.figure(figsize=(12, 6))
-    plt.bar(annual_mean.index.year, annual_mean['National_Precip'], color='teal', alpha=0.6, label='Annual Precip')
-    plt.plot(annual_mean.index.year, annual_mean['National_Precip'].rolling(window=5).mean(), color='navy', linewidth=2, label='5-yr avg Precip')
-    plt.title('Average Annual Precipitation (1961-2017)')
-    plt.ylabel('Precipitation (mm)')
-    plt.xlabel('Year')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    precip_plot_path = os.path.join(out_dir, 'precipitation_trends.png')
-    plt.savefig(precip_plot_path)
-    print(f"Saved precipitation trends plot to {precip_plot_path}")
-    plt.close()
-    
-    return annual_mean
+    seq_len = 5
+    pred_len = 5
+    X_5d, Y_5d = create_5d_sequence_tensors(norm_tensor, seq_len=seq_len, pred_len=pred_len)
 
-if __name__ == "__main__":
-    csv_path = 'cleaned_climate_data.csv'
-    annual_data = run_eda(csv_path)
-    annual_data.to_csv('annual_aggregates.csv')
-    print("EDA complete. Annual aggregates saved.")
+    sample_years = years[seq_len + pred_len - 1 :]
+    test_mask = sample_years > 2010
+    if not np.any(test_mask):
+        test_mask = np.arange(len(X_5d)) >= int(0.85 * len(X_5d))
+
+    X_test_t = torch.tensor(X_5d[test_mask], dtype=torch.float32)
+    Y_test_t = torch.tensor(Y_5d[test_mask], dtype=torch.float32)
+
+    # Load Trained Models
+    conv_lstm = ConvLSTMAutoencoder(in_channels=4, hidden_channels=32, pred_len=pred_len)
+    conv_lstm.load_state_dict(torch.load('conv_lstm_model.pt'))
+    conv_lstm.eval()
+
+    unet = TimeDistributedUNet(in_channels=4, hidden_dim=32, pred_len=pred_len)
+    unet.load_state_dict(torch.load('unet_model.pt'))
+    unet.eval()
+
+    with torch.no_grad():
+        pred_lstm = conv_lstm(X_test_t)
+        pred_unet = unet(X_test_t)
+
+    # Lead-Time RMSE Curves for lead steps 1..5
+    rmse_lstm_lead = []
+    rmse_unet_lead = []
+    rmse_pers_lead = []
+    rmse_clim_lead = []
+
+    last_step = X_test_t[:, -1:, :, :, :]
+    pers_pred = last_step.repeat(1, pred_len, 1, 1, 1)
+    clim_pred = torch.zeros_like(Y_test_t)
+
+    for step in range(pred_len):
+        # Calculate RMSE across test set for step t
+        mse_lstm = torch.mean((pred_lstm[:, step] - Y_test_t[:, step])**2).item()
+        mse_unet = torch.mean((pred_unet[:, step] - Y_test_t[:, step])**2).item()
+        mse_pers = torch.mean((pers_pred[:, step] - Y_test_t[:, step])**2).item()
+        mse_clim = torch.mean((clim_pred[:, step] - Y_test_t[:, step])**2).item()
+
+        rmse_lstm_lead.append(round(np.sqrt(mse_lstm), 4))
+        rmse_unet_lead.append(round(np.sqrt(mse_unet), 4))
+        rmse_pers_lead.append(round(np.sqrt(mse_pers), 4))
+        rmse_clim_lead.append(round(np.sqrt(mse_clim), 4))
+
+    # Spatial Error Heatmaps (Pixel-wise RMSE over test set across channels)
+    # Channel 0: MaxTemp, Channel 1: MinTemp
+    spatial_err_lstm = torch.sqrt(torch.mean((pred_lstm - Y_test_t)**2, dim=(0, 1, 2))).numpy() # (H, W)
+    spatial_err_unet = torch.sqrt(torch.mean((pred_unet - Y_test_t)**2, dim=(0, 1, 2))).numpy() # (H, W)
+
+    # Zonal Mean Profiles (Average across longitudes for each latitude band)
+    zonal_mean_obs = torch.mean(Y_test_t[:, :, 0], dim=(0, 1, 3)).numpy() # (H,)
+    zonal_mean_lstm = torch.mean(pred_lstm[:, :, 0], dim=(0, 1, 3)).numpy() # (H,)
+    zonal_mean_unet = torch.mean(pred_unet[:, :, 0], dim=(0, 1, 3)).numpy() # (H,)
+
+    diag_data = {
+        'lead_times': list(range(1, pred_len + 1)),
+        'rmse_convlstm': rmse_lstm_lead,
+        'rmse_unet': rmse_unet_lead,
+        'rmse_persistence': rmse_pers_lead,
+        'rmse_climatology': rmse_clim_lead,
+        'lat_grid': LAT_GRID.tolist(),
+        'lon_grid': LON_GRID.tolist(),
+        'zonal_mean_obs': zonal_mean_obs.tolist(),
+        'zonal_mean_convlstm': zonal_mean_lstm.tolist(),
+        'zonal_mean_unet': zonal_mean_unet.tolist(),
+        'spatial_err_convlstm': spatial_err_lstm.tolist(),
+        'spatial_err_unet': spatial_err_unet.tolist()
+    }
+
+    with open('dl_diagnostics.json', 'w') as f:
+        json.dump(diag_data, f, indent=2)
+
+    print("Generated dl_diagnostics.json successfully.")
+
+if __name__ == '__main__':
+    generate_evaluation_diagnostics()
