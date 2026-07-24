@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Cell,
   ComposedChart, Area, ReferenceArea
 } from 'recharts';
 import { TrendingUp, Thermometer, CloudRain, AlertTriangle } from 'lucide-react';
-import climateData from './data/climate.json';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -39,6 +38,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function Dashboard() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [climateData, setClimateData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('historical');
   const [selectedLocation, setSelectedLocation] = useState('National');
   const [showPeak, setShowPeak] = useState(true);
@@ -47,13 +49,27 @@ export default function Dashboard() {
   const [showMin, setShowMin] = useState(true);
   const [showBands, setShowBands] = useState(true);
 
+  useEffect(() => {
+    fetch('/data/climate.json')
+      .then((res) => res.json())
+      .then((data) => {
+        setClimateData(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Failed to load climate data:', err);
+        setLoading(false);
+      });
+  }, []);
+
   // Ensure data exists for safety
-  const locationData = climateData.data[selectedLocation as keyof typeof climateData.data] || climateData.data['National'];
+  const locationData = climateData?.data?.[selectedLocation] || climateData?.data?.['National'];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { historical, forecast, metrics } = locationData as any;
-  const locations = climateData.locations;
+  const { historical = [], forecast = [], metrics = {} } = (locationData || {}) as any;
+  const locations = climateData?.locations || [];
 
   const { baselineMean, baselineStdDev } = React.useMemo(() => {
+    if (!historical || historical.length === 0) return { baselineMean: 0, baselineStdDev: 1 };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const baselineData = historical.filter((h: any) => h.year >= 1961 && h.year <= 1990);
     if (baselineData.length === 0) return { baselineMean: 0, baselineStdDev: 1 };
@@ -64,6 +80,17 @@ export default function Dashboard() {
     
     return { baselineMean: mean, baselineStdDev: Math.sqrt(variance) };
   }, [historical]);
+
+  if (loading || !climateData) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-200 font-sans flex flex-col items-center justify-center p-6">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+          <p className="text-slate-400 font-medium text-sm animate-pulse">Loading Climate Dataset...</p>
+        </div>
+      </div>
+    );
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderZScoreDot = (props: any) => {
