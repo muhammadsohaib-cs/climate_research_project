@@ -45,23 +45,41 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<'historical' | 'anomalies' | 'forecast'>('historical');
   const [selectedLocation, setSelectedLocation] = useState('National');
 
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
   // Toggle Visibility State
   const [showPeak, setShowPeak] = useState(true);
   const [showSummer, setShowSummer] = useState(true);
   const [showMax, setShowMax] = useState(true);
   const [showMin, setShowMin] = useState(true);
 
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setErrorMsg(null);
+      
+      let res = await fetch('/data/climate.json');
+      if (!res.ok) {
+        // Fallback to Next.js API route handler
+        res = await fetch('/api/climate');
+      }
+
+      if (!res.ok) {
+        throw new Error(`Server responded with status ${res.status}`);
+      }
+
+      const data = await res.json();
+      setClimateData(data);
+    } catch (err: any) {
+      console.error('Failed to load climate data:', err);
+      setErrorMsg(err.message || 'Failed to load climate data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetch('/data/climate.json')
-      .then((res) => res.json())
-      .then((data) => {
-        setClimateData(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Failed to load climate data:', err);
-        setLoading(false);
-      });
+    loadData();
   }, []);
 
   const stationInfo = climateData?.station_data?.[selectedLocation] || climateData?.station_data?.['National'];
@@ -85,12 +103,34 @@ export default function Dashboard() {
     return { baselineMean: mean, baselineStdDev: Math.sqrt(variance) };
   }, [historical]);
 
-  if (loading || !climateData) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 text-slate-200 font-sans flex flex-col items-center justify-center p-6">
         <div className="flex flex-col items-center space-y-4">
           <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
           <p className="text-slate-400 font-medium text-sm animate-pulse">Loading Machine Learning Climate System...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (errorMsg || !climateData) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-200 font-sans flex flex-col items-center justify-center p-6 text-center">
+        <div className="max-w-md bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col items-center space-y-4">
+          <div className="w-12 h-12 bg-red-500/10 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xl font-bold">
+            !
+          </div>
+          <h2 className="text-lg font-semibold text-slate-100">Failed to Load Climate Data</h2>
+          <p className="text-sm text-slate-400">
+            {errorMsg || 'Climate dataset could not be parsed or found.'}
+          </p>
+          <button
+            onClick={loadData}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors shadow-lg shadow-blue-500/20"
+          >
+            Retry Loading
+          </button>
         </div>
       </div>
     );
