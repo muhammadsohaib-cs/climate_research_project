@@ -1,0 +1,60 @@
+# Implementation Plan - Custom Climate Chart Visualizations
+
+The goal of this task is to enhance the climate dashboard by replacing solid/standard color lines with a dynamic dot-based (or dashed) visualization indicating temperature trends (rising, stable, declining). We will also unify the colors across all three sections to use exactly 2–3 colors (Red for rising, Amber for stable, Blue for declining), style the anomaly bar chart consistently, and upgrade the sidebar legend/key with precise visual symbols.
+
+## Data Accuracy Guarantees
+
+> [!IMPORTANT]
+> To ensure 100% data plotting accuracy and maintain the precise variation and trends of the max, min, peak, and summer temperatures:
+> 1. We will **retain the exact same `dataKey` mappings** (`peakMaxTemp`, `summerMaxTemp`, `maxTemp`, `minTemp`, `forecastPeak`, `forecastMax`, `forecastSummer`, `forecastMin`) on all `Line` components.
+> 2. The `type="monotone"` property is preserved for smooth cubic interpolation, which guarantees the lines track the exact data variations.
+> 3. The `CustomTempDot` component will read the values directly from Recharts' internal dataset props (`seriesData[index]`) using the corresponding `dataKey`, ensuring the dots are placed at the exact mathematical coordinates on the canvas.
+
+## Proposed Changes
+
+We will modify [app/page.tsx](file:///c:/Users/Midtown Computers/OneDrive/Desktop/climate reserach/climate_research_project/app/page.tsx) to implement:
+1. A new `CustomTempDot` component that dynamically colors dots based on whether the temperature rose, declined, or remained stable compared to the previous year.
+2. A streamlined, less colorful styling for all charts (Historical Trends and ML Forecast lines will use thin, neutral slate strokes, leaving the color entirely to the dynamic trend dots).
+3. The anomaly bar chart styled consistently using the same Red (positive anomaly), Amber (neutral anomaly), and Blue (negative anomaly) color palette.
+4. A highly detailed and premium sidebar key replacing the simple text list with actual visual representations (SVG line strokes, dots, and bar indicators).
+
+### Climate Dashboard Component
+
+#### [MODIFY] [page.tsx](file:///c:/Users/Midtown Computers/OneDrive/Desktop/climate reserach/climate_research_project/app/page.tsx)
+
+- **Define `CustomTempDot`**:
+  Create a helper component to evaluate the current point relative to the previous point:
+  - **Rising (Red `#ef4444`)**: Change of $> +0.05^\circ\text{C}$ compared to previous year.
+  - **Declining (Blue `#3b82f6`)**: Change of $< -0.05^\circ\text{C}$ compared to previous year.
+  - **Stable (Amber `#eab308`)**: Change within $\pm 0.05^\circ\text{C}$.
+
+- **Update Tab 1 (Historical Trends)**:
+  - Change line stroke colors to neutral slate (`#64748b`) with thin stroke width (`1.5`).
+  - Use different dash arrays to distinguish series:
+    - Peak Extreme Max: `strokeDasharray="4 4"` with `CustomTempDot`
+    - Summer Season Mean: `strokeDasharray="2 2"` with `CustomTempDot`
+    - Mean Max Temp: Solid with `CustomTempDot`
+    - Mean Min Temp: Solid with `CustomTempDot`
+
+- **Update Tab 2 (Temperature Anomalies)**:
+  - Change anomaly bar cell fills to match the 3-color palette:
+    - Anomaly $> +0.5^\circ\text{C}$: Red (`#ef4444`)
+    - Anomaly between $-0.5^\circ\text{C}$ and $+0.5^\circ\text{C}$: Amber (`#eab308`)
+    - Anomaly $< -0.5^\circ\text{C}$: Blue (`#3b82f6`)
+
+- **Update Tab 3 (Machine Learning Forecast)**:
+  - Apply the neutral slate strokes and `CustomTempDot` to the ML Forecast lines.
+  - Make historical background baseline lines thin and dark (`stroke="#475569"`) with `dot={false}` to avoid visual noise.
+
+- **Update Sidebar Information**:
+  - Re-design the Chart Key component with SVGs matching the dashed lines, colored circles, and anomaly bars.
+
+## Verification Plan
+
+### Manual Verification
+- Run the Next.js dev server using `npm run dev` and navigate to the dashboard.
+- Inspect the **Historical Trends** tab to verify that the lines are neutral and dots change color (Red, Amber, Blue) indicating rising/declining/stable trends.
+- Compare the new charts side-by-side with the old charts to ensure the values at each year (x-axis) and temperature (y-axis) are mathematically identical.
+- Inspect the **Temperature Anomalies** tab to verify that the bars are colored using Red, Amber, or Blue based on value.
+- Inspect the **Machine Learning Forecast** tab to verify that the projected lines have the same dynamic dot rendering and desaturated baseline lines.
+- Inspect the **Insights & Analysis** sidebar to verify that the legend keys contain the actual visual symbols (SVGs of lines/dots and anomaly rectangles).
