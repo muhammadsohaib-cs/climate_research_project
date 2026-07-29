@@ -1,30 +1,19 @@
-# Walkthrough - Solid Historical & Dotted Forecast Visualizations with Shaded Confidence Regions
+# Walkthrough - Simple Anomaly Point Labels
 
-We have successfully customized the climate dashboard to use a clean solid-vs-dotted line style for past and future data, and integrated shaded confidence region bands around the ML forecasts.
+We have successfully refined the text labels of the dynamic point markers (`ReferenceDot`) on all three charts to display `"+anomaly"` and `"-anomaly"` based on the direction of sudden temperature variations.
 
 ## Changes Made
 
-### 1. Unified Colors & Solid Lines
-- **Historical Lines**: Set to continuous solid paths without any dots/ticks for maximum clean look:
-  - **Annual Mean Max**: Solid Red line (`#ef4444`, width `2.5`).
-  - **Annual Mean Min**: Solid Blue line (`#3b82f6`, width `2.5`).
-  - **Peak Extreme Max**: Solid Dark Orange line (`#c2410c`, width `2.5`).
-  - **Summer Season Mean**: Solid Dark Gold line (`#b45309`, width `2`).
-- Removed the dynamic slanting ticks (`CustomTempTick`) completely.
+### 1. Label Text Refinement
+Updated the dynamic calculations inside [page.tsx](file:///c:/Users/Midtown%20Computers/OneDrive/Desktop/climate%20reserach/climate_research_project/app/page.tsx):
+- **Warming shifts** ($\Delta T > 0$): Label changed to display **`"+anomaly"`** (colored Red/Orange).
+- **Cooling shifts** ($\Delta T < 0$): Label changed to display **`"-anomaly"`** (colored Blue/Turquoise).
+- Removed the generic word `"Variation"` from the text labels, aligning the annotations with standard climate terminology.
 
-### 2. Dotted Forecast Projections
-- ML Forecast paths continue the colors of the historical counterparts but are rendered as **dotted lines** (`strokeDasharray="3 3"` or `2 2` for Summer Mean) starting from the 2017 forecast line.
-
-### 3. Shaded Confidence Bands (Prediction Intervals)
-- Upgraded the forecast chart to a Recharts `<ComposedChart>`.
-- Mapped prediction bounds from the dataset to 2-tuples inside a processed `forecastWithRanges` data structure using React `useMemo`.
-- Rendered `<Area>` components behind forecast lines with `0.12` opacity to show the model's confidence ranges for Extreme Peak, Mean Max, and Mean Min temperatures.
-
-### 4. Upgraded Sidebar Key
-- Configured the sidebar legend to display:
-  - An indicator explaining the **Dotted Line + Shaded Band** layout for projection intervals (90% Confidence Interval).
-  - SVG lines representing solid Red, Blue, and Dark Orange paths for the historical values.
+### 2. Point Coordinates (Unchanged)
+- Point markers continue to plot at the exact dynamic climate shift coordinates for the selected region.
+- All previous visual elements (solid historical curves, dotted forecast curves, and shaded prediction bands) remain completely unchanged.
 
 ## Verification
 
-- **Build Verification**: Compile check completed successfully. Next.js compiled in 4.5s and TypeScript check passed in 4.3s with zero errors or warnings.
+- **Build Verification**: Compile check completed successfully. Next.js compiled in 6.4s and TypeScript check passed in 8.8s with no errors.
