@@ -38,6 +38,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
+const REMOVED_STATIONS = new Set([
+  'Chitral', 'Ormara', 'Mohin Jodaro', 'Badin', 'Lasbella', 'Risalpur', 
+  'Lahore', 'Kohat', 'Multan', 'Peshawar', 'Khuzdar', 'Saidu Sharif', 
+  'Barkhan', 'Jiwani', 'Kalat', 'Rohri', 'Dir', 'Cherat', 'Passni', 
+  'Astore', 'Sibbi'
+]);
+
 export default function Dashboard() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [climateData, setClimateData] = useState<any>(null);
@@ -87,7 +94,8 @@ export default function Dashboard() {
   const historical = stationInfo?.historical || climateData?.data || [];
   const forecast = stationInfo?.forecast || [];
   const metrics = stationInfo?.metrics || {};
-  const locations = climateData?.locations || [];
+  const rawLocations = climateData?.locations || [];
+  const locations = useMemo(() => rawLocations.filter((loc: string) => !REMOVED_STATIONS.has(loc)), [rawLocations]);
 
   // Calculate 10-Year Rolling Average for Historical Data
   const historicalWithRollingAvg = useMemo(() => {

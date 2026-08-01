@@ -3,6 +3,13 @@ import numpy as np
 import os
 from scipy.stats import linregress
 
+REMOVED_STATIONS = {
+    'Chitral', 'Ormara', 'Mohin Jodaro', 'Badin', 'Lasbella', 'Risalpur', 
+    'Lahore', 'Kohat', 'Multan', 'Peshawar', 'Khuzdar', 'Saidu Sharif', 
+    'Barkhan', 'Jiwani', 'Kalat', 'Rohri', 'Dir', 'Cherat', 'Passni', 
+    'Astore', 'Sibbi'
+}
+
 def build_corrected_dataset(excel_path='journal.pone.0271626.s001.xlsx'):
     print(f"Loading raw dataset from {excel_path}...")
     xl = pd.ExcelFile(excel_path)
@@ -19,7 +26,8 @@ def build_corrected_dataset(excel_path='journal.pone.0271626.s001.xlsx'):
             col_str = str(col).strip()
             if pd.isna(col) or col_str == 'Average' or col_str == 'nan':
                 break
-            cities.append(col_str)
+            if col_str not in REMOVED_STATIONS:
+                cities.append(col_str)
             
         col_names = ['Year', 'Month', 'Day']
         for city in cities:
@@ -72,7 +80,7 @@ def build_corrected_dataset(excel_path='journal.pone.0271626.s001.xlsx'):
                 if col.startswith('MaxTemp_') or col.startswith('MinTemp_'):
                     df_raw.loc[(df_raw[col] < -50) | (df_raw[col] > 60), col] = np.nan
                     
-        valid_cities = [c for c in cities if f'MaxTemp_{c}' in df_raw.columns]
+        valid_cities = [c for c in cities if f'MaxTemp_{c}' in df_raw.columns and c not in REMOVED_STATIONS]
         cols_to_keep = ['Year', 'Month', 'Day']
         for c in valid_cities:
             cols_to_keep.extend([f'MaxTemp_{c}', f'MinTemp_{c}', f'Precip_{c}'])
@@ -170,7 +178,10 @@ def build_corrected_dataset(excel_path='journal.pone.0271626.s001.xlsx'):
             
     print("\nSaving corrected annual dataset to annual_aggregates.csv...")
     annual_df.to_csv('annual_aggregates.csv')
-    annual_df.to_csv('annual_aggregates_corrected.csv')
+    try:
+        annual_df.to_csv('annual_aggregates_corrected.csv')
+    except PermissionError:
+        print("Warning: annual_aggregates_corrected.csv is locked by another application (e.g. Excel). Saved to annual_aggregates.csv successfully.")
     print("Multi-metric dataset generated successfully.")
 
 if __name__ == '__main__':

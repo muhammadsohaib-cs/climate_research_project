@@ -3,6 +3,13 @@ import json
 import numpy as np
 import pandas as pd
 
+REMOVED_STATIONS = {
+    'Chitral', 'Ormara', 'Mohin Jodaro', 'Badin', 'Lasbella', 'Risalpur', 
+    'Lahore', 'Kohat', 'Multan', 'Peshawar', 'Khuzdar', 'Saidu Sharif', 
+    'Barkhan', 'Jiwani', 'Kalat', 'Rohri', 'Dir', 'Cherat', 'Passni', 
+    'Astore', 'Sibbi'
+}
+
 def create_json():
     print("=== Exporting ML Pipeline v2.1 Dataset to JSON (1961 - 2037) ===")
     df = pd.read_csv('annual_aggregates.csv')
@@ -13,7 +20,7 @@ def create_json():
         ml_metrics = json.load(f)
 
     max_cols = [c for c in df.columns if (c.startswith('MaxTemp_') and not c.endswith('_Anomaly')) or c == 'National_MaxTemp']
-    locations = [c.replace('MaxTemp_', '').replace('National_MaxTemp', 'National') for c in max_cols]
+    locations = [c.replace('MaxTemp_', '').replace('National_MaxTemp', 'National') for c in max_cols if c.replace('MaxTemp_', '') not in REMOVED_STATIONS]
 
     station_data = {}
 
