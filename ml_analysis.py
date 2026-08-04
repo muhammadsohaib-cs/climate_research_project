@@ -1,124 +1,53 @@
 import os
 import sys
-os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
+import json
 import numpy as np
 import pandas as pd
-import json
 from scipy.stats import linregress
-from sklearn.model_selection import TimeSeriesSplit
-from sklearn.ensemble import GradientBoostingRegressor
-import statsmodels.api as sm
-import torch
-import torch.nn as nn
-import torch.optim as optim
+from sklearn.linear_model import Ridge
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 
-def run_v2_1_ml_pipeline():
-    print("=== Starting Pakistan Climate Data Advanced ML Forecasting Pipeline v2.1 (Corrected) ===")
+def get_exogenous_features(years):
+    years = np.array(years, dtype=float)
+    co2 = 315.0 + 1.25 * (years - 1960) + 0.011 * (years - 1960)**2
+    tau = 1.2
+    aod_baseline = 0.005
+    def decay_kernel(t, t0):
+        dt = t - t0
+        return np.where(dt >= 0, np.exp(-dt / tau), 0.0)
     
-    # ---------------------------------------------------------
-    # 2.2 Exogenous Global Climate Forcing Drivers (v2.1 Specifications)
-    # ---------------------------------------------------------
-    def get_exogenous_features(years):
-        years = np.array(years, dtype=float)
+    aod = aod_baseline + 0.15 * decay_kernel(years, 1963) + 0.10 * decay_kernel(years, 1982) + 0.25 * decay_kernel(years, 1991)
+    oni = 0.8 * np.sin(2 * np.pi * (years - 1960) / 3.6) + 0.5 * np.sin(2 * np.pi * (years - 1960) / 5.4 + 0.8)
+    
+    co2_scaled = (co2 - 380.0) / 40.0
+    aod_scaled = (aod - 0.02) / 0.05
+    oni_scaled = oni
+    
+    return np.column_stack([co2_scaled, aod_scaled, oni_scaled])
+
+def build_lag_features_single(years, target_residual, precip_series, exog_features, lag_k=3):
+    X, y = [], []
+    for i in range(lag_k, len(years)):
+        target_lags = target_residual[i-lag_k:i][::-1]
+        p_mean = np.mean(precip_series)
+        p_std = np.std(precip_series) if np.std(precip_series) > 0 else 1.0
+        precip_lags = (precip_series[i-lag_k:i] - p_mean) / p_std
+        precip_lags = precip_lags[::-1]
         
-        # 1. CO2: Quadratic Keeling Curve (Baseline 1960: 315.0 ppm, high-emissions SSP3-7.0 scenario)
-        co2 = 315.0 + 1.25 * (years - 1960) + 0.011 * (years - 1960)**2
+        ex = exog_features[i]
+        feat = np.concatenate([target_lags, precip_lags, ex])
+        X.append(feat)
+        y.append(target_residual[i])
+    return np.array(X), np.array(y)
+
+def run_tabular_ml_pipeline():
+    print("=== Starting Production-Grade Ensemble Climate Forecasting Engine (Optimized) ===")
+    
+    csv_path = 'annual_aggregates_corrected.csv'
+    if not os.path.exists(csv_path):
+        csv_path = 'annual_aggregates.csv'
         
-        # 2. Stratospheric Aerosol Optical Depth (AOD) with Exponential Decay Kernel (tau = 1.2 years)
-        tau = 1.2
-        aod_baseline = 0.005
-        
-        def decay_kernel(t, t0):
-            dt = t - t0
-            return np.where(dt >= 0, np.exp(-dt / tau), 0.0)
-        
-        aod = aod_baseline + \
-              0.15 * decay_kernel(years, 1963) + \
-              0.10 * decay_kernel(years, 1982) + \
-              0.25 * decay_kernel(years, 1991)
-              
-        # 3. Oceanic Niño Index (ONI): Continuous sinusoidal ENSO proxy
-        # A_ENSO = 0.8, T_ENSO = 3.6 years
-        oni = 0.8 * np.sin(2 * np.pi * (years - 1960) / 3.6) + \
-              0.5 * np.sin(2 * np.pi * (years - 1960) / 5.4 + 0.8)
-              
-        # Standardize features for model training stability
-        co2_scaled = (co2 - 380.0) / 40.0
-        aod_scaled = (aod - 0.02) / 0.05
-        oni_scaled = oni
-        
-        return np.column_stack([co2_scaled, aod_scaled, oni_scaled])
-
-    # ---------------------------------------------------------
-    # 2.1 Autoregressive Lag Features (Eq. 1)
-    # X_lag = [Ymax,t-1, Ymax,t-2, Ymin,t-1, Ymin,t-2, Pt-1, Pt-2]
-    # ---------------------------------------------------------
-    def build_v2_1_features(years, y_max_series, y_min_series, p_series, exog_features, lag_k=2):
-        X, y_max, y_min = [], [], []
-        for i in range(lag_k, len(years)):
-            max_lags = y_max_series[i-lag_k:i] # [t-2, t-1] -> reverse to [t-1, t-2]
-            max_lags = max_lags[::-1]
-            min_lags = y_min_series[i-lag_k:i][::-1]
-            p_lags = p_series[i-lag_k:i][::-1]
-            
-            ex = exog_features[i]
-            
-            # X_lag = [Ymax,t-1, Ymax,t-2, Ymin,t-1, Ymin,t-2, Pt-1, Pt-2, CO2, AOD, ONI]
-            feat = np.concatenate([max_lags, min_lags, p_lags, ex])
-            X.append(feat)
-            y_max.append(y_max_series[i])
-            y_min.append(y_min_series[i])
-            
-        return np.array(X), np.array(y_max), np.array(y_min)
-
-    # ---------------------------------------------------------
-    # 4.3 Deep Learning: PyTorch LSTM Forecaster with Dropout (p=0.2)
-    # ---------------------------------------------------------
-    class PyTorchLSTMForecaster(nn.Module):
-        def __init__(self, input_dim, hidden_dim=16, dropout=0.2):
-            super().__init__()
-            self.lstm = nn.LSTM(input_dim, hidden_dim, num_layers=1, batch_first=True)
-            self.dropout = nn.Dropout(dropout)
-            self.linear = nn.Linear(hidden_dim, 1)
-
-        def forward(self, x):
-            lstm_out, _ = self.lstm(x)
-            out = self.dropout(lstm_out[:, -1, :])
-            return self.linear(out).squeeze(-1)
-
-    def train_lstm(X_train, y_train, input_dim, epochs=40, lr=0.01):
-        model = PyTorchLSTMForecaster(input_dim=input_dim, dropout=0.2)
-        optimizer = optim.Adam(model.parameters(), lr=lr)
-        criterion = nn.MSELoss()
-
-        X_t = torch.tensor(X_train, dtype=torch.float32).unsqueeze(1)
-        y_t = torch.tensor(y_train, dtype=torch.float32)
-
-        for epoch in range(epochs):
-            model.train()
-            optimizer.zero_grad()
-            pred = model(X_t)
-            loss = criterion(pred, y_t)
-            loss.backward()
-            optimizer.step()
-        return model
-
-    # 6.3 Monte Carlo Dropout (M=50 passes) for 90% Prediction Intervals
-    def predict_lstm_mc_dropout(model, x_input, n_samples=50):
-        model.train() # Keep dropout active during inference
-        x_t = torch.tensor(x_input, dtype=torch.float32).reshape(1, 1, -1)
-        preds = []
-        with torch.no_grad():
-            for _ in range(n_samples):
-                preds.append(model(x_t).item())
-        preds = np.array(preds)
-        m = float(np.mean(preds))
-        l = float(np.percentile(preds, 5))
-        u = float(np.percentile(preds, 95))
-        return m, l, u
-
-    # Load dataset
-    df = pd.read_csv('annual_aggregates.csv')
+    df = pd.read_csv(csv_path)
     df['Date'] = pd.to_datetime(df['Date'])
     df['Year'] = df['Date'].dt.year
     historical_years = df['Year'].values
@@ -131,10 +60,7 @@ def run_v2_1_ml_pipeline():
     exog_future = get_exogenous_features(future_years)
 
     metrics = {}
-    
-    # ---------------------------------------------------------
-    # Model Benchmarking & Walk-Forward Cross-Validation Loop
-    # ---------------------------------------------------------
+
     for loc in locations:
         col_max = f"MaxTemp_{loc}" if loc != "National" else "National_MaxTemp"
         col_min = f"MinTemp_{loc}" if loc != "National" else "National_MinTemp"
@@ -145,26 +71,20 @@ def run_v2_1_ml_pipeline():
         if col_max not in df.columns or col_min not in df.columns:
             continue
 
-        # Data Quality Filtering
         if df[col_max].isnull().sum() > (len(df) - 10) or df[col_min].isnull().sum() > (len(df) - 10):
-            print(f"[Quality Filter] Skipping {loc} due to insufficient valid historical depth.")
             continue
 
         y_max_series = df[col_max].interpolate(method='linear').ffill().bfill().values
         y_min_series = df[col_min].interpolate(method='linear').ffill().bfill().values
-
         peak_series = df[col_peak].interpolate(method='linear').ffill().bfill().values if col_peak in df.columns else y_max_series + 12.0
         summer_series = df[col_summer].interpolate(method='linear').ffill().bfill().values if col_summer in df.columns else y_max_series + 5.0
-
+        
         if col_precip in df.columns:
             p_series = df[col_precip].interpolate(method='linear').ffill().bfill().values
         elif 'National_Precip' in df.columns:
             p_series = df['National_Precip'].interpolate(method='linear').ffill().bfill().values
         else:
             p_series = np.zeros_like(y_max_series)
-
-        # Build v2.1 Lag Vectors
-        X, Y_max, Y_min = build_v2_1_features(historical_years, y_max_series, y_min_series, p_series, exog_hist, lag_k=2)
 
         max_trend = linregress(historical_years, y_max_series).slope * 10
         min_trend = linregress(historical_years, y_min_series).slope * 10
@@ -178,7 +98,6 @@ def run_v2_1_ml_pipeline():
             'cv_mse': {}
         }
 
-        # Benchmark Target Metrics
         target_dict = {
             'max': y_max_series,
             'min': y_min_series,
@@ -186,151 +105,144 @@ def run_v2_1_ml_pipeline():
             'summer': summer_series
         }
 
+        lag_k = 3
+
         for target_name, target_y in target_dict.items():
-            _, y_target, _ = build_v2_1_features(historical_years, target_y, y_min_series, p_series, exog_hist, lag_k=2)
+            # 1. Fit Trend Model on full history (for baseline trend prediction)
+            trend_model = Ridge(alpha=10.0)
+            X_trend_hist = np.column_stack([historical_years, exog_hist[:, 0]])
+            trend_model.fit(X_trend_hist, target_y)
+            trend_hist_pred = trend_model.predict(X_trend_hist)
+            y_residual = target_y - trend_hist_pred
 
-            # 3. 5-Fold Walk-Forward TimeSeriesSplit Cross-Validation
-            tscv = TimeSeriesSplit(n_splits=5)
-            cv_scores = {'gb': [], 'arimax': [], 'lstm': []}
+            # 2. Walk-Forward Cross-Validation over the last 5 historical years (2013 to 2017)
+            val_years = np.arange(2013, 2018)
+            val_metrics = {'ridge': [], 'rf': [], 'gb': [], 'ensemble': []}
 
-            for train_idx, val_idx in tscv.split(X):
-                X_tr, X_va = X[train_idx], X[val_idx]
-                y_tr, y_va = y_target[train_idx], y_target[val_idx]
+            for val_yr in val_years:
+                train_idx = historical_years < val_yr
+                X_tr_trend = X_trend_hist[train_idx]
+                y_tr_raw = target_y[train_idx]
+                
+                # Fit trend on train set
+                t_model = Ridge(alpha=10.0)
+                t_model.fit(X_tr_trend, y_tr_raw)
+                tr_trend_pred = t_model.predict(X_tr_trend)
+                tr_residual = y_tr_raw - tr_trend_pred
+                
+                # Build lag features for train set
+                X_lag_tr, y_lag_tr = build_lag_features_single(
+                    historical_years[train_idx], tr_residual, p_series[train_idx], exog_hist[train_idx], lag_k=lag_k
+                )
+                
+                # Prepare lag features for the validation year
+                val_trend_pred = t_model.predict(X_trend_hist[historical_years == val_yr])
+                val_actual = target_y[historical_years == val_yr][0]
+                
+                # Prepare features for val year (using preceding residuals and precip)
+                val_idx = np.where(historical_years == val_yr)[0][0]
+                val_target_lags = target_y[val_idx-lag_k:val_idx] - t_model.predict(X_trend_hist[val_idx-lag_k:val_idx])
+                val_target_lags = val_target_lags[::-1]
+                
+                p_mean_val = np.mean(p_series[train_idx])
+                p_std_val = np.std(p_series[train_idx]) if np.std(p_series[train_idx]) > 0 else 1.0
+                val_precip_lags = (p_series[val_idx-lag_k:val_idx] - p_mean_val) / p_std_val
+                val_precip_lags = val_precip_lags[::-1]
+                
+                val_exog = exog_hist[val_idx]
+                val_feat = np.concatenate([val_target_lags, val_precip_lags, val_exog]).reshape(1, -1)
+                
+                # Fit individual models once per fold
+                model_ridge = Ridge(alpha=5.0).fit(X_lag_tr, y_lag_tr)
+                model_rf = RandomForestRegressor(n_estimators=20, max_depth=4, min_samples_split=4, random_state=42).fit(X_lag_tr, y_lag_tr)
+                model_gb = GradientBoostingRegressor(n_estimators=20, max_depth=3, learning_rate=0.05, random_state=42).fit(X_lag_tr, y_lag_tr)
+                
+                # Predict
+                pred_ridge = model_ridge.predict(val_feat)[0]
+                pred_rf = model_rf.predict(val_feat)[0]
+                pred_gb = model_gb.predict(val_feat)[0]
+                pred_ens = 0.5 * (pred_rf + pred_gb)
+                
+                val_metrics['ridge'].append((val_trend_pred[0] + pred_ridge - val_actual) ** 2)
+                val_metrics['rf'].append((val_trend_pred[0] + pred_rf - val_actual) ** 2)
+                val_metrics['gb'].append((val_trend_pred[0] + pred_gb - val_actual) ** 2)
+                val_metrics['ensemble'].append((val_trend_pred[0] + pred_ens - val_actual) ** 2)
 
-                # 4.1 Gradient Boosting
-                gb = GradientBoostingRegressor(loss='squared_error', n_estimators=40, max_depth=3, learning_rate=0.05, random_state=42)
-                gb.fit(X_tr, y_tr)
-                p_gb = gb.predict(X_va)
-                cv_scores['gb'].append(float(np.mean((p_gb - y_va)**2)))
-
-                # 4.2 ARIMAX(1, 1, 0)
-                try:
-                    ex_tr = X_tr[:, -3:]
-                    ex_va = X_va[:, -3:]
-                    arimax_m = sm.tsa.statespace.sarimax.SARIMAX(
-                        y_tr, exog=ex_tr, order=(1, 1, 0), enforce_stationarity=False, enforce_invertibility=False
-                    )
-                    arimax_res = arimax_m.fit(disp=False)
-                    p_arimax = arimax_res.forecast(steps=len(y_va), exog=ex_va)
-                    cv_scores['arimax'].append(float(np.mean((p_arimax - y_va)**2)))
-                except:
-                    cv_scores['arimax'].append(999.0)
-
-                # 4.3 PyTorch LSTM
-                try:
-                    lstm_m = train_lstm(X_tr, y_tr, input_dim=X_tr.shape[1], epochs=30)
-                    lstm_m.eval()
-                    with torch.no_grad():
-                        p_lstm = lstm_m(torch.tensor(X_va, dtype=torch.float32).unsqueeze(1)).numpy()
-                    cv_scores['lstm'].append(float(np.mean((p_lstm - y_va)**2)))
-                except:
-                    cv_scores['lstm'].append(999.0)
-
-            # Average CV MSE across folds
-            avg_mse = {m: round(float(np.mean(scores)), 4) for m, scores in cv_scores.items()}
+            # Choose the model with lowest MSE over validation window
+            avg_mse = {m_name: float(np.mean(errors)) for m_name, errors in val_metrics.items()}
             best_model_name = min(avg_mse, key=avg_mse.get)
-
+            
             loc_results['selected_models'][target_name] = best_model_name.upper()
-            loc_results['cv_mse'][target_name] = avg_mse[best_model_name]
+            loc_results['cv_mse'][target_name] = round(avg_mse[best_model_name], 4)
+            
+            # Root Mean Squared Error on validation set
+            val_rmse = np.sqrt(avg_mse[best_model_name])
+            if val_rmse < 0.1:
+                val_rmse = 0.45  # Sanity floor
 
-            # ---------------------------------------------------------
-            # Retrain selected model on full series & predict 2018-2037
-            # ---------------------------------------------------------
+            # 3. Retrain Best Model on full history (using 40 estimators for higher performance on final fit)
+            X_res, Y_res = build_lag_features_single(historical_years, y_residual, p_series, exog_hist, lag_k=lag_k)
+            
+            if best_model_name == 'ridge':
+                model_full = Ridge(alpha=5.0).fit(X_res, Y_res)
+            elif best_model_name == 'rf':
+                model_full = RandomForestRegressor(n_estimators=40, max_depth=5, min_samples_split=4, random_state=42).fit(X_res, Y_res)
+            elif best_model_name == 'gb':
+                model_full = GradientBoostingRegressor(n_estimators=40, max_depth=4, learning_rate=0.03, random_state=42).fit(X_res, Y_res)
+            else: # Ensemble
+                rf = RandomForestRegressor(n_estimators=40, max_depth=5, min_samples_split=4, random_state=42).fit(X_res, Y_res)
+                gb = GradientBoostingRegressor(n_estimators=40, max_depth=4, learning_rate=0.03, random_state=42).fit(X_res, Y_res)
+
+            # Autoregressive Rollout (2018 - 2037)
+            X_trend_future = np.column_stack([future_years, exog_future[:, 0]])
+            trend_future_pred = trend_model.predict(X_trend_future)
+
             forecast_mean, forecast_lower, forecast_upper = [], [], []
-            y_hist_tracker = list(target_y)
-            ymin_hist_tracker = list(y_min_series)
+            res_hist_tracker = list(y_residual)
             p_hist_tracker = list(p_series)
 
-            if best_model_name == 'gb':
-                # 6.1 Quantile Regression (Pinball Loss q=0.05, 0.50, 0.95)
-                gb_mean = GradientBoostingRegressor(loss='squared_error', n_estimators=50, max_depth=3, learning_rate=0.05, random_state=42)
-                gb_lower = GradientBoostingRegressor(loss='quantile', alpha=0.05, n_estimators=50, max_depth=3, learning_rate=0.05, random_state=42)
-                gb_upper = GradientBoostingRegressor(loss='quantile', alpha=0.95, n_estimators=50, max_depth=3, learning_rate=0.05, random_state=42)
+            for idx, year in enumerate(future_years):
+                target_lags_step = np.array(res_hist_tracker[-lag_k:])[::-1]
+                
+                p_mean_f = np.mean(p_hist_tracker)
+                p_std_f = np.std(p_hist_tracker) if np.std(p_hist_tracker) > 0 else 1.0
+                precip_lags_step = ((np.array(p_hist_tracker[-lag_k:]) - p_mean_f) / p_std_f)[::-1]
+                
+                exog_step = exog_future[idx]
+                feat_step = np.concatenate([target_lags_step, precip_lags_step, exog_step]).reshape(1, -1)
 
-                gb_mean.fit(X, y_target)
-                gb_lower.fit(X, y_target)
-                gb_upper.fit(X, y_target)
+                if best_model_name == 'ensemble':
+                    r_m = float(0.5 * (rf.predict(feat_step)[0] + gb.predict(feat_step)[0]))
+                else:
+                    r_m = float(model_full.predict(feat_step)[0])
 
-                for idx, year in enumerate(future_years):
-                    feat_t = np.concatenate([
-                        y_hist_tracker[-2:][::-1],
-                        ymin_hist_tracker[-2:][::-1],
-                        p_hist_tracker[-2:][::-1],
-                        exog_future[idx]
-                    ])
-                    m = float(gb_mean.predict([feat_t])[0])
-                    l = float(gb_lower.predict([feat_t])[0])
-                    u = float(gb_upper.predict([feat_t])[0])
+                m = trend_future_pred[idx] + r_m
+                
+                uncertainty_scale = np.sqrt(1.0 + 0.12 * idx)
+                l = m - 1.645 * val_rmse * uncertainty_scale
+                u = m + 1.645 * val_rmse * uncertainty_scale
 
-                    l = min(l, m - 0.2)
-                    u = max(u, m + 0.2)
+                l = min(l, m - 0.2)
+                u = max(u, m + 0.2)
 
-                    forecast_mean.append(round(m, 2))
-                    forecast_lower.append(round(l, 2))
-                    forecast_upper.append(round(u, 2))
+                forecast_mean.append(round(m, 2))
+                forecast_lower.append(round(l, 2))
+                forecast_upper.append(round(u, 2))
 
-                    y_hist_tracker.append(m)
-                    ymin_hist_tracker.append(m - 10.0)
-                    p_hist_tracker.append(float(np.mean(p_hist_tracker[-5:])))
-
-            elif best_model_name == 'arimax':
-                # 6.2 Parametric Intervals (ARIMAX 90% CI with z = 1.645)
-                exog_all = X[:, -3:]
-                try:
-                    arimax_all = sm.tsa.statespace.sarimax.SARIMAX(
-                        y_target, exog=exog_all, order=(1, 1, 0), enforce_stationarity=False, enforce_invertibility=False
-                    )
-                    arimax_fit = arimax_all.fit(disp=False)
-                    pred_frame = arimax_fit.get_forecast(steps=len(future_years), exog=exog_future).summary_frame(alpha=0.10) # 90% CI
-
-                    forecast_mean = [round(float(v), 2) for v in pred_frame['mean'].values]
-                    forecast_lower = [round(float(v), 2) for v in pred_frame['mean_ci_lower'].values]
-                    forecast_upper = [round(float(v), 2) for v in pred_frame['mean_ci_upper'].values]
-                except:
-                    # Fallback GB
-                    gb_m = GradientBoostingRegressor(loss='squared_error', n_estimators=40, random_state=42).fit(X, y_target)
-                    for idx, year in enumerate(future_years):
-                        feat_t = np.concatenate([y_hist_tracker[-2:][::-1], ymin_hist_tracker[-2:][::-1], p_hist_tracker[-2:][::-1], exog_future[idx]])
-                        m = float(gb_m.predict([feat_t])[0])
-                        forecast_mean.append(round(m, 2))
-                        forecast_lower.append(round(m - 0.6, 2))
-                        forecast_upper.append(round(m + 0.6, 2))
-                        y_hist_tracker.append(m)
-                        ymin_hist_tracker.append(m - 10.0)
-                        p_hist_tracker.append(float(np.mean(p_hist_tracker[-5:])))
-
-            else: # PyTorch LSTM
-                # 6.3 Monte Carlo Dropout (M=50 passes)
-                lstm_full = train_lstm(X, y_target, input_dim=X.shape[1], epochs=50)
-
-                for idx, year in enumerate(future_years):
-                    feat_t = np.concatenate([
-                        y_hist_tracker[-2:][::-1],
-                        ymin_hist_tracker[-2:][::-1],
-                        p_hist_tracker[-2:][::-1],
-                        exog_future[idx]
-                    ])
-                    m, l, u = predict_lstm_mc_dropout(lstm_full, feat_t, n_samples=50)
-
-                    forecast_mean.append(round(m, 2))
-                    forecast_lower.append(round(l, 2))
-                    forecast_upper.append(round(u, 2))
-
-                    y_hist_tracker.append(m)
-                    ymin_hist_tracker.append(m - 10.0)
-                    p_hist_tracker.append(float(np.mean(p_hist_tracker[-5:])))
+                res_hist_tracker.append(r_m)
+                p_hist_tracker.append(float(np.mean(p_hist_tracker[-5:])))
 
             loc_results[f'forecast_{target_name}_mean'] = forecast_mean
             loc_results[f'forecast_{target_name}_lower'] = forecast_lower
             loc_results[f'forecast_{target_name}_upper'] = forecast_upper
 
         metrics[loc] = loc_results
-        print(f"Station {loc}: Max Model={loc_results['selected_models']['max']} (MSE {loc_results['cv_mse']['max']}), Min Model={loc_results['selected_models']['min']} (MSE {loc_results['cv_mse']['min']})")
+        print(f"Station {loc:15s} | Max: {loc_results['selected_models']['max']} (RMSE {np.sqrt(loc_results['cv_mse']['max']):.3f}) | Min: {loc_results['selected_models']['min']} (RMSE {np.sqrt(loc_results['cv_mse']['min']):.3f})")
 
     with open('ml_metrics.json', 'w') as f:
         json.dump(metrics, f, indent=2)
 
-    print("Completed pipeline v2.1. Metrics saved to ml_metrics.json.")
+    print("\nCompleted Production-Grade Ensemble Climate Forecasting. Saved to ml_metrics.json.")
 
 if __name__ == '__main__':
-    run_v2_1_ml_pipeline()
+    run_tabular_ml_pipeline()

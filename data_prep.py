@@ -142,8 +142,80 @@ def create_5d_sequence_tensors(norm_tensor, seq_len=5, pred_len=5):
     
     return X_5d, Y_5d
 
+def get_exogenous_forcing(years):
+    years = np.array(years, dtype=float)
+    co2 = 315.0 + 1.25 * (years - 1960) + 0.011 * (years - 1960)**2
+    tau = 1.2
+    aod_baseline = 0.005
+    def decay_kernel(t, t0):
+        dt = t - t0
+        return np.where(dt >= 0, np.exp(-dt / tau), 0.0)
+    aod = aod_baseline + 0.15 * decay_kernel(years, 1963) + 0.10 * decay_kernel(years, 1982) + 0.25 * decay_kernel(years, 1991)
+    oni = 0.8 * np.sin(2 * np.pi * (years - 1960) / 3.6) + 0.5 * np.sin(2 * np.pi * (years - 1960) / 5.4 + 0.8)
+    return co2, aod, oni
+
+def build_tabular_ml_dataset(csv_path='annual_aggregates_corrected.csv', lag_k=2):
+    if not os.path.exists(csv_path):
+        csv_path = 'annual_aggregates.csv'
+    df = pd.read_csv(csv_path)
+    df['Date'] = pd.to_datetime(df['Date'])
+    df['Year'] = df['Date'].dt.year
+    years = df['Year'].values
+
+    co2, aod, oni = get_exogenous_forcing(years)
+
+    max_cols = [c for c in df.columns if (c.startswith('MaxTemp_') and not c.endswith('_Anomaly')) or c == 'National_MaxTemp']
+    locations = [c.replace('MaxTemp_', '').replace('National_MaxTemp', 'National') for c in max_cols]
+
+    rows = []
+    for loc in locations:
+        col_max = f"MaxTemp_{loc}" if loc != "National" else "National_MaxTemp"
+        col_min = f"MinTemp_{loc}" if loc != "National" else "National_MinTemp"
+        col_precip = f"Precip_{loc}" if loc != "National" else "National_Precip"
+        col_peak = f"PeakMaxTemp_{loc}" if loc != "National" else "National_PeakMaxTemp"
+        col_summer = f"SummerMaxTemp_{loc}" if loc != "National" else "National_SummerMaxTemp"
+
+        if col_max not in df.columns or col_min not in df.columns:
+            continue
+
+        lat, lon = STATION_COORDS.get(loc, (30.3753, 69.3451))
+
+        s_max = df[col_max].interpolate(method='linear').ffill().bfill().values
+        s_min = df[col_min].interpolate(method='linear').ffill().bfill().values
+        s_peak = df[col_peak].interpolate(method='linear').ffill().bfill().values if col_peak in df.columns else s_max + 12.0
+        s_summer = df[col_summer].interpolate(method='linear').ffill().bfill().values if col_summer in df.columns else s_max + 5.0
+        s_precip = df[col_precip].interpolate(method='linear').ffill().bfill().values if col_precip in df.columns else np.zeros_like(s_max)
+
+        for i in range(lag_k, len(years) - 1):
+            rows.append({
+                'Station': loc,
+                'Year': years[i],
+                'Latitude': lat,
+                'Longitude': lon,
+                'MaxTemp': s_max[i],
+                'MinTemp': s_min[i],
+                'PeakMaxTemp': s_peak[i],
+                'SummerMaxTemp': s_summer[i],
+                'Precip': s_precip[i],
+                'MaxTemp_Lag1': s_max[i-1],
+                'MaxTemp_Lag2': s_max[i-2],
+                'MinTemp_Lag1': s_min[i-1],
+                'MinTemp_Lag2': s_min[i-2],
+                'Precip_Lag1': s_precip[i-1],
+                'Precip_Lag2': s_precip[i-2],
+                'CO2_ppm': co2[i],
+                'AOD_Volcano': aod[i],
+                'ONI_ENSO': oni[i],
+                'Target_MaxTemp_NextYear': s_max[i+1],
+                'Target_MinTemp_NextYear': s_min[i+1],
+                'Target_PeakMaxTemp_NextYear': s_peak[i+1],
+                'Target_SummerMaxTemp_NextYear': s_summer[i+1],
+            })
+
+    return pd.DataFrame(rows)
+
 if __name__ == '__main__':
-    grid_tensor, years = load_gridded_dataset()
-    norm_tensor, mu_clim, sigma_clim = compute_climatological_zscores(grid_tensor, years)
-    X_5d, Y_5d = create_5d_sequence_tensors(norm_tensor)
-    print(f"Z-Score Normalization completed. Shapes: X={X_5d.shape}, Y={Y_5d.shape}")
+    tab_df = build_tabular_ml_dataset()
+    print(f"2D Tabular ML Dataset Built Successfully. Shape: {tab_df.shape}")
+    print(tab_df.head(2))
+

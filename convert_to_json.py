@@ -3,16 +3,12 @@ import json
 import numpy as np
 import pandas as pd
 
-REMOVED_STATIONS = {
-    'Chitral', 'Ormara', 'Mohin Jodaro', 'Badin', 'Lasbella', 'Risalpur', 
-    'Lahore', 'Kohat', 'Multan', 'Peshawar', 'Khuzdar', 'Saidu Sharif', 
-    'Barkhan', 'Jiwani', 'Kalat', 'Rohri', 'Dir', 'Cherat', 'Passni', 
-    'Astore', 'Sibbi'
-}
+REMOVED_STATIONS = set()
 
 def create_json():
     print("=== Exporting ML Pipeline v2.1 Dataset to JSON (1961 - 2037) ===")
-    df = pd.read_csv('annual_aggregates.csv')
+    csv_path = 'annual_aggregates_corrected.csv' if os.path.exists('annual_aggregates_corrected.csv') else 'annual_aggregates.csv'
+    df = pd.read_csv(csv_path)
     df['Date'] = pd.to_datetime(df['Date'])
     df['Year'] = df['Date'].dt.year
 
@@ -114,21 +110,35 @@ def create_json():
         forecast_data[-1]["forecastMinLower"] = last_hist["minTemp"]
         forecast_data[-1]["forecastMinUpper"] = last_hist["minTemp"]
 
+        # Calculate transition nudge bias at the boundary (2018) to avoid abrupt jumps
+        bias_max = (last_hist["maxTemp"] - f_max_mean[0]) if len(f_max_mean) > 0 and last_hist["maxTemp"] is not None and f_max_mean[0] is not None else 0.0
+        bias_min = (last_hist["minTemp"] - f_min_mean[0]) if len(f_min_mean) > 0 and last_hist["minTemp"] is not None and f_min_mean[0] is not None else 0.0
+        bias_peak = (last_hist["peakMaxTemp"] - f_peak_mean[0]) if len(f_peak_mean) > 0 and last_hist["peakMaxTemp"] is not None and f_peak_mean[0] is not None else 0.0
+        bias_summer = (last_hist["summerMaxTemp"] - f_summer_mean[0]) if len(f_summer_mean) > 0 and last_hist["summerMaxTemp"] is not None and f_summer_mean[0] is not None else 0.0
+
         # Future ML Forecast part (2018 - 2037)
         for idx, fy in enumerate(f_years):
-            f_max = f_max_mean[idx] if idx < len(f_max_mean) else round(last_hist["maxTemp"] + 0.05 * (idx + 1), 2)
-            f_min = f_min_mean[idx] if idx < len(f_min_mean) else round(last_hist["minTemp"] + 0.04 * (idx + 1), 2)
-            f_peak = f_peak_mean[idx] if idx < len(f_peak_mean) else round(last_hist["peakMaxTemp"] + 0.06 * (idx + 1), 2)
-            f_summer = f_summer_mean[idx] if idx < len(f_summer_mean) else round(last_hist["summerMaxTemp"] + 0.04 * (idx + 1), 2)
+            nudge_factor = np.exp(-idx / 4.0)  # Decay transition bias over 4-year scale
 
-            f_max_l = f_max_lower[idx] if idx < len(f_max_lower) else round(f_max - 0.5, 2)
-            f_max_u = f_max_upper[idx] if idx < len(f_max_upper) else round(f_max + 0.5, 2)
+            raw_max = f_max_mean[idx] if idx < len(f_max_mean) else last_hist["maxTemp"] + 0.02 * (idx + 1)
+            raw_min = f_min_mean[idx] if idx < len(f_min_mean) else last_hist["minTemp"] + 0.015 * (idx + 1)
+            raw_peak = f_peak_mean[idx] if idx < len(f_peak_mean) else last_hist["peakMaxTemp"] + 0.025 * (idx + 1)
+            raw_summer = f_summer_mean[idx] if idx < len(f_summer_mean) else last_hist["summerMaxTemp"] + 0.02 * (idx + 1)
 
-            f_peak_l = f_peak_lower[idx] if idx < len(f_peak_lower) else round(f_peak - 0.7, 2)
-            f_peak_u = f_peak_upper[idx] if idx < len(f_peak_upper) else round(f_peak + 0.7, 2)
+            # Apply nudge
+            f_max = round(raw_max + bias_max * nudge_factor, 2)
+            f_min = round(raw_min + bias_min * nudge_factor, 2)
+            f_peak = round(raw_peak + bias_peak * nudge_factor, 2)
+            f_summer = round(raw_summer + bias_summer * nudge_factor, 2)
 
-            f_min_l = f_min_lower[idx] if idx < len(f_min_lower) else round(f_min - 0.4, 2)
-            f_min_u = f_min_upper[idx] if idx < len(f_min_upper) else round(f_min + 0.4, 2)
+            f_max_l = round((f_max_lower[idx] if idx < len(f_max_lower) else f_max - 0.5) + bias_max * nudge_factor, 2)
+            f_max_u = round((f_max_upper[idx] if idx < len(f_max_upper) else f_max + 0.5) + bias_max * nudge_factor, 2)
+
+            f_peak_l = round((f_peak_lower[idx] if idx < len(f_peak_lower) else f_peak - 0.7) + bias_peak * nudge_factor, 2)
+            f_peak_u = round((f_peak_upper[idx] if idx < len(f_peak_upper) else f_peak + 0.7) + bias_peak * nudge_factor, 2)
+
+            f_min_l = round((f_min_lower[idx] if idx < len(f_min_lower) else f_min - 0.4) + bias_min * nudge_factor, 2)
+            f_min_u = round((f_min_upper[idx] if idx < len(f_min_upper) else f_min + 0.4) + bias_min * nudge_factor, 2)
 
             forecast_data.append({
                 "year": fy,
