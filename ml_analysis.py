@@ -25,17 +25,31 @@ def get_exogenous_features(years):
     
     return np.column_stack([co2_scaled, aod_scaled, oni_scaled])
 
-def build_lag_features_single(years, target_residual, precip_series, exog_features, lag_k=3):
+def build_lag_features_single(years, target_residual, precip_series, exog_features, lag_k=5, p_mean=None, p_std=None):
     X, y = [], []
+    if p_mean is None:
+        p_mean = np.mean(precip_series)
+    if p_std is None:
+        p_std = np.std(precip_series) if np.std(precip_series) > 0 else 1.0
+        
     for i in range(lag_k, len(years)):
         target_lags = target_residual[i-lag_k:i][::-1]
-        p_mean = np.mean(precip_series)
-        p_std = np.std(precip_series) if np.std(precip_series) > 0 else 1.0
         precip_lags = (precip_series[i-lag_k:i] - p_mean) / p_std
         precip_lags = precip_lags[::-1]
         
         ex = exog_features[i]
-        feat = np.concatenate([target_lags, precip_lags, ex])
+        
+        # Enhanced Feature Engineering (No Data Leakage)
+        target_roll_mean_3 = np.mean(target_lags[:3])
+        target_diff_1 = target_lags[0] - target_lags[1]
+        co2_oni_interaction = ex[0] * ex[2]
+        
+        feat = np.concatenate([
+            target_lags, 
+            precip_lags, 
+            [target_roll_mean_3, target_diff_1, co2_oni_interaction],
+            ex
+        ])
         X.append(feat)
         y.append(target_residual[i])
     return np.array(X), np.array(y)
@@ -105,7 +119,7 @@ def run_tabular_ml_pipeline():
             'summer': summer_series
         }
 
-        lag_k = 3
+        lag_k = 5
 
         for target_name, target_y in target_dict.items():
             # 1. Fit Trend Model on full history (for baseline trend prediction)
@@ -130,9 +144,14 @@ def run_tabular_ml_pipeline():
                 tr_trend_pred = t_model.predict(X_tr_trend)
                 tr_residual = y_tr_raw - tr_trend_pred
                 
+                # Dynamic scaling parameters strictly from training fold (No Leakage)
+                p_mean_val = np.mean(p_series[train_idx])
+                p_std_val = np.std(p_series[train_idx]) if np.std(p_series[train_idx]) > 0 else 1.0
+                
                 # Build lag features for train set
                 X_lag_tr, y_lag_tr = build_lag_features_single(
-                    historical_years[train_idx], tr_residual, p_series[train_idx], exog_hist[train_idx], lag_k=lag_k
+                    historical_years[train_idx], tr_residual, p_series[train_idx], exog_hist[train_idx],
+                    lag_k=lag_k, p_mean=p_mean_val, p_std=p_std_val
                 )
                 
                 # Prepare lag features for the validation year
@@ -144,18 +163,27 @@ def run_tabular_ml_pipeline():
                 val_target_lags = target_y[val_idx-lag_k:val_idx] - t_model.predict(X_trend_hist[val_idx-lag_k:val_idx])
                 val_target_lags = val_target_lags[::-1]
                 
-                p_mean_val = np.mean(p_series[train_idx])
-                p_std_val = np.std(p_series[train_idx]) if np.std(p_series[train_idx]) > 0 else 1.0
                 val_precip_lags = (p_series[val_idx-lag_k:val_idx] - p_mean_val) / p_std_val
                 val_precip_lags = val_precip_lags[::-1]
                 
                 val_exog = exog_hist[val_idx]
-                val_feat = np.concatenate([val_target_lags, val_precip_lags, val_exog]).reshape(1, -1)
+                
+                # Engineered validation point features
+                val_target_roll_mean_3 = np.mean(val_target_lags[:3])
+                val_target_diff_1 = val_target_lags[0] - val_target_lags[1]
+                val_co2_oni_interaction = val_exog[0] * val_exog[2]
+                
+                val_feat = np.concatenate([
+                    val_target_lags, 
+                    val_precip_lags, 
+                    [val_target_roll_mean_3, val_target_diff_1, val_co2_oni_interaction],
+                    val_exog
+                ]).reshape(1, -1)
                 
                 # Fit individual models once per fold
                 model_ridge = Ridge(alpha=5.0).fit(X_lag_tr, y_lag_tr)
-                model_rf = RandomForestRegressor(n_estimators=20, max_depth=4, min_samples_split=4, random_state=42).fit(X_lag_tr, y_lag_tr)
-                model_gb = GradientBoostingRegressor(n_estimators=20, max_depth=3, learning_rate=0.05, random_state=42).fit(X_lag_tr, y_lag_tr)
+                model_rf = RandomForestRegressor(n_estimators=30, max_depth=5, min_samples_split=4, random_state=42).fit(X_lag_tr, y_lag_tr)
+                model_gb = GradientBoostingRegressor(n_estimators=30, max_depth=3, learning_rate=0.05, random_state=42).fit(X_lag_tr, y_lag_tr)
                 
                 # Predict
                 pred_ridge = model_ridge.predict(val_feat)[0]
@@ -175,23 +203,33 @@ def run_tabular_ml_pipeline():
             loc_results['selected_models'][target_name] = best_model_name.upper()
             loc_results['cv_mse'][target_name] = round(avg_mse[best_model_name], 4)
             
-            # Root Mean Squared Error on validation set
-            val_rmse = np.sqrt(avg_mse[best_model_name])
-            if val_rmse < 0.1:
-                val_rmse = 0.45  # Sanity floor
-
-            # 3. Retrain Best Model on full history (using 40 estimators for higher performance on final fit)
-            X_res, Y_res = build_lag_features_single(historical_years, y_residual, p_series, exog_hist, lag_k=lag_k)
+            # 3. Retrain Best Model on full history (with optimized hyperparameters)
+            p_mean_full = np.mean(p_series)
+            p_std_full = np.std(p_series) if np.std(p_series) > 0 else 1.0
+            
+            X_res, Y_res = build_lag_features_single(
+                historical_years, y_residual, p_series, exog_hist,
+                lag_k=lag_k, p_mean=p_mean_full, p_std=p_std_full
+            )
             
             if best_model_name == 'ridge':
                 model_full = Ridge(alpha=5.0).fit(X_res, Y_res)
             elif best_model_name == 'rf':
-                model_full = RandomForestRegressor(n_estimators=40, max_depth=5, min_samples_split=4, random_state=42).fit(X_res, Y_res)
+                model_full = RandomForestRegressor(n_estimators=50, max_depth=5, min_samples_split=4, random_state=42).fit(X_res, Y_res)
             elif best_model_name == 'gb':
-                model_full = GradientBoostingRegressor(n_estimators=40, max_depth=4, learning_rate=0.03, random_state=42).fit(X_res, Y_res)
+                model_full = GradientBoostingRegressor(n_estimators=50, max_depth=3, learning_rate=0.05, random_state=42).fit(X_res, Y_res)
             else: # Ensemble
-                rf = RandomForestRegressor(n_estimators=40, max_depth=5, min_samples_split=4, random_state=42).fit(X_res, Y_res)
-                gb = GradientBoostingRegressor(n_estimators=40, max_depth=4, learning_rate=0.03, random_state=42).fit(X_res, Y_res)
+                rf = RandomForestRegressor(n_estimators=50, max_depth=5, min_samples_split=4, random_state=42).fit(X_res, Y_res)
+                gb = GradientBoostingRegressor(n_estimators=50, max_depth=3, learning_rate=0.05, random_state=42).fit(X_res, Y_res)
+
+            # Fit Quantile Regression Models on full history for intervals (No Gaussian Heuristics)
+            model_lower = GradientBoostingRegressor(
+                loss='quantile', alpha=0.05, n_estimators=60, max_depth=3, learning_rate=0.05, random_state=42
+            ).fit(X_res, Y_res)
+            
+            model_upper = GradientBoostingRegressor(
+                loss='quantile', alpha=0.95, n_estimators=60, max_depth=3, learning_rate=0.05, random_state=42
+            ).fit(X_res, Y_res)
 
             # Autoregressive Rollout (2018 - 2037)
             X_trend_future = np.column_stack([future_years, exog_future[:, 0]])
@@ -204,26 +242,37 @@ def run_tabular_ml_pipeline():
             for idx, year in enumerate(future_years):
                 target_lags_step = np.array(res_hist_tracker[-lag_k:])[::-1]
                 
-                p_mean_f = np.mean(p_hist_tracker)
-                p_std_f = np.std(p_hist_tracker) if np.std(p_hist_tracker) > 0 else 1.0
-                precip_lags_step = ((np.array(p_hist_tracker[-lag_k:]) - p_mean_f) / p_std_f)[::-1]
+                precip_lags_step = ((np.array(p_hist_tracker[-lag_k:]) - p_mean_full) / p_std_full)[::-1]
                 
                 exog_step = exog_future[idx]
-                feat_step = np.concatenate([target_lags_step, precip_lags_step, exog_step]).reshape(1, -1)
+                
+                # Rollout step engineered features
+                target_roll_mean_3 = np.mean(target_lags_step[:3])
+                target_diff_1 = target_lags_step[0] - target_lags_step[1]
+                co2_oni_interaction = exog_step[0] * exog_step[2]
+                
+                feat_step = np.concatenate([
+                    target_lags_step, 
+                    precip_lags_step, 
+                    [target_roll_mean_3, target_diff_1, co2_oni_interaction],
+                    exog_step
+                ]).reshape(1, -1)
 
                 if best_model_name == 'ensemble':
                     r_m = float(0.5 * (rf.predict(feat_step)[0] + gb.predict(feat_step)[0]))
                 else:
                     r_m = float(model_full.predict(feat_step)[0])
 
-                m = trend_future_pred[idx] + r_m
-                
-                uncertainty_scale = np.sqrt(1.0 + 0.12 * idx)
-                l = m - 1.645 * val_rmse * uncertainty_scale
-                u = m + 1.645 * val_rmse * uncertainty_scale
+                r_l = float(model_lower.predict(feat_step)[0])
+                r_u = float(model_upper.predict(feat_step)[0])
 
-                l = min(l, m - 0.2)
-                u = max(u, m + 0.2)
+                m = trend_future_pred[idx] + r_m
+                l = trend_future_pred[idx] + r_l
+                u = trend_future_pred[idx] + r_u
+
+                # Enforce physical sanity constraints
+                l = min(l, m - 0.15)
+                u = max(u, m + 0.15)
 
                 forecast_mean.append(round(m, 2))
                 forecast_lower.append(round(l, 2))
