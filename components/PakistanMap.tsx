@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useEffect, useRef } from 'react';
-import { Map, MapStyle, config, Marker, Popup } from '@maptiler/sdk';
-
-config.apiKey = '6EJobKlrqbFsfxl8gZlh';
+import * as maptilersdk from "@maptiler/sdk";
+import "@maptiler/sdk/dist/maptiler-sdk.css";
 
 // 55 Pakistan Meteorological Weather Stations Coordinates swapped to [Longitude, Latitude]
 const STATION_COORDS: Record<string, [number, number]> = {
@@ -70,31 +69,49 @@ interface PakistanMapProps {
 }
 
 export default function PakistanMap({ selectedLocation, setSelectedLocation }: PakistanMapProps) {
-  const mapInstance = useRef<Map | null>(null);
-  const markersRef = useRef<Record<string, Marker>>({});
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<maptilersdk.Map | null>(null);
+  const markersRef = useRef<Record<string, maptilersdk.Marker>>({});
   const isInitialMount = useRef(true);
 
   useEffect(() => {
-    // Initialize the map centered on Pakistan
-    const map = new Map({
-      container: 'map',
-      style: MapStyle.STREETS,
-      center: [69.3451, 30.3753],
-      zoom: 5
+    if (!mapContainer.current || mapRef.current) return;
+
+    const apiKey = process.env.NEXT_PUBLIC_MAPTILER_API_KEY;
+    if (!apiKey) {
+      console.error("MapTiler API Key is missing in .env.local!");
+      return;
+    }
+
+    // Set MapTiler API Key
+    maptilersdk.config.apiKey = apiKey;
+
+    // Initialize Map with Outdoor Light style
+    const map = new maptilersdk.Map({
+      container: mapContainer.current,
+      style: maptilersdk.MapStyle.OUTDOOR, // Outdoor/Topo Light style
+      center: [69.3451, 30.3753], // Centered on Pakistan
+      zoom: 5,
+      minZoom: 4.5,
+      // Lock camera navigation to Pakistan's bounding box
+      maxBounds: [
+        [58.0, 22.0], // Southwest boundary
+        [80.0, 38.0], // Northeast boundary
+      ],
     });
 
-    mapInstance.current = map;
+    mapRef.current = map;
 
-    // Plot all 55 weather stations
+    // Plot all 55 weather stations as markers
     Object.entries(STATION_COORDS).forEach(([name, coords]) => {
-      const popup = new Popup({ offset: 25 }).setHTML(
-        `<div style="color: #0f172a; padding: 4px;">
+      const popup = new maptilersdk.Popup({ offset: 25 }).setHTML(
+        `<div style="color: #0f172a; padding: 4px; font-family: sans-serif;">
           <h4 style="margin: 0; font-weight: 700; font-size: 13px;">${name}</h4>
           <p style="margin: 4px 0 0 0; font-size: 11px; color: #475569;">Weather Station</p>
          </div>`
       );
 
-      const marker = new Marker({
+      const marker = new maptilersdk.Marker({
         color: name === selectedLocation ? '#f97316' : '#3b82f6'
       })
         .setLngLat(coords)
@@ -103,7 +120,7 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
 
       // Listen for click event to update the selected station in dashboard
       marker.getElement().addEventListener('click', (e) => {
-        // Prevent map click handler (if any)
+        // Prevent map click handler from triggering other popups
         e.stopPropagation();
         setSelectedLocation(name);
       });
@@ -111,22 +128,142 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
       markersRef.current[name] = marker;
     });
 
-    // Cleanup map on unmount
+    map.on("load", async () => {
+      try {
+        // 1. Fetch GeoJSON for Pakistan Administrative Regions
+        const pakData = await fetch(
+          "https://media.githubusercontent.com/media/wmgeolab/geoBoundaries/main/releaseData/gbOpen/PAK/ADM1/geoBoundaries-PAK-ADM1_simplified.geojson"
+        ).then((res) => res.json());
+
+        // Ensure map is still mounted
+        if (!mapRef.current) return;
+
+        // 2. Build Inverted Mask (World Box with Pakistan Polygon Cut Out)
+        const pakHoles = pakData.features.map(
+          (feature: any) => feature.geometry.coordinates[0]
+        );
+
+        const maskGeoJSON = {
+          type: "FeatureCollection",
+          features: [
+            {
+              type: "Feature",
+              geometry: {
+                type: "Polygon",
+                coordinates: [
+                  // Global bounding box
+                  [
+                    [-180, -90],
+                    [180, -90],
+                    [180, 90],
+                    [-180, 90],
+                    [-180, -90],
+                  ],
+                  ...pakHoles, // Subtracts Pakistan's shape
+                ],
+              },
+            },
+          ],
+        };
+
+        // 3. Add World Mask Layer (Hides Outside Countries with Light Slate)
+        map.addSource("world-mask", {
+          type: "geojson",
+          data: maskGeoJSON as any,
+        });
+
+        map.addLayer({
+          id: "world-mask-layer",
+          type: "fill",
+          source: "world-mask",
+          paint: {
+            "fill-color": "#E2E8F0", // Soft light slate gray matching the light map
+            "fill-opacity": 0.95,
+          },
+        });
+
+        // 4. Add Pakistan Region Polygons (Harmonized Color Palette)
+        map.addSource("pakistan-regions", {
+          type: "geojson",
+          data: pakData,
+        });
+
+        map.addLayer({
+          id: "regions-fill",
+          type: "fill",
+          source: "pakistan-regions",
+          paint: {
+            "fill-color": [
+              "match",
+              ["get", "shapeName"],
+              "Punjab", "#0284C7",             // Sky Blue
+              "Sindh", "#16A34A",              // Forest/Emerald Green
+              "Khyber Pakhtunkhwa", "#D97706", // Warm Gold/Amber
+              "Balochistan", "#DC2626",        // Terracotta Red
+              "Gilgit-Baltistan", "#7C3AED",  // Muted Violet
+              "Azad Kashmir", "#DB2777",       // Soft Rose
+              "#2563EB",                       // Fallback Blue
+            ],
+            "fill-opacity": 0.35,              // 35% opacity so roads/terrain stay visible
+          },
+        });
+
+        // 5. Add Region Outline Borders
+        map.addLayer({
+          id: "regions-border",
+          type: "line",
+          source: "pakistan-regions",
+          paint: {
+            "line-color": "#334155", // Charcoal Slate border for soft contrast
+            "line-width": 1.5,
+          },
+        });
+
+        // 6. Mouse Interactions & Popups
+        map.on("mousemove", "regions-fill", () => {
+          map.getCanvas().style.cursor = "pointer";
+        });
+
+        map.on("mouseleave", "regions-fill", () => {
+          map.getCanvas().style.cursor = "";
+        });
+
+        map.on("click", "regions-fill", (e) => {
+          if (!e.features || !e.features[0]) return;
+          const name = e.features[0].properties?.shapeName || "Region";
+
+          new maptilersdk.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML(
+              `<div style="
+                color: #0F172A; 
+                font-family: sans-serif; 
+                font-weight: 600; 
+                font-size: 14px; 
+                padding: 4px 6px;
+              ">${name}</div>`
+            )
+            .addTo(map);
+        });
+      } catch (err) {
+        console.error("Error loading regional map boundaries GeoJSON:", err);
+      }
+    });
+
     return () => {
       Object.values(markersRef.current).forEach(marker => marker.remove());
       markersRef.current = {};
-      if (mapInstance.current) {
-        mapInstance.current.remove();
-        mapInstance.current = null;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
       }
     };
   }, []);
 
-  // Update marker colors and pan to selection when selectedLocation changes
+  // Sync selected location
   useEffect(() => {
-    if (!mapInstance.current) return;
+    if (!mapRef.current) return;
 
-    // Skip the flyTo on mount to respect the initial center
     const shouldFly = !isInitialMount.current;
     isInitialMount.current = false;
 
@@ -145,7 +282,7 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
 
     if (selectedLocation === 'National') {
       if (shouldFly) {
-        mapInstance.current.flyTo({
+        mapRef.current.flyTo({
           center: [69.3451, 30.3753],
           zoom: 5,
           essential: true
@@ -163,7 +300,7 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
       const coords = STATION_COORDS[selectedLocation];
       if (coords) {
         if (shouldFly) {
-          mapInstance.current.flyTo({
+          mapRef.current.flyTo({
             center: coords,
             zoom: 8.5,
             essential: true
@@ -190,8 +327,8 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
   }, [selectedLocation]);
 
   return (
-    <div className="w-full h-full relative">
-      <div id="map" className="w-full h-full rounded-2xl" />
+    <div style={{ width: "100%", height: "100%", position: "relative" }}>
+      <div ref={mapContainer} id="map" style={{ width: "100%", height: "100%", borderRadius: "8px" }} />
     </div>
   );
 }

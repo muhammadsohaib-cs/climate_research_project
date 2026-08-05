@@ -407,6 +407,14 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Map Integration */}
+        <section className="relative w-full h-[400px] border border-white/10 rounded-2xl overflow-hidden bg-slate-900/40 backdrop-blur-md shadow-xl mt-2">
+          <PakistanMap
+            selectedLocation={selectedLocation}
+            setSelectedLocation={setSelectedLocation}
+          />
+        </section>
+
         {/* Content Area */}
         <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
@@ -892,14 +900,6 @@ export default function Dashboard() {
               Estimated via 5-Fold TimeSeriesSplit validation.
             </div>
           </div>
-        </section>
-
-        {/* Map Integration */}
-        <section className="relative w-full h-[500px] border border-white/10 rounded-2xl overflow-hidden bg-slate-900/40 backdrop-blur-md shadow-xl mt-8">
-          <PakistanMap
-            selectedLocation={selectedLocation}
-            setSelectedLocation={setSelectedLocation}
-          />
         </section>
       </div>
     </div>
