@@ -27,6 +27,9 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <link href='https://cdn.maptiler.com/maptiler-sdk-js/v4.1.0/maptiler-sdk.css' rel='stylesheet' />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

@@ -1,11 +1,21 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Cell,
   ReferenceArea, ComposedChart, Area, ReferenceDot
 } from 'recharts';
 import { TrendingUp, Thermometer, Cpu, Info, Zap, AlertTriangle, Activity, Flame, Award } from 'lucide-react';
+
+const PakistanMap = dynamic(() => import('@/components/PakistanMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full bg-slate-900/60 border border-slate-800 rounded-xl p-5 flex items-center justify-center">
+      <div className="text-[11px] text-slate-500 animate-pulse">Loading Pakistan Map...</div>
+    </div>
+  ),
+});
 
 // Custom Tooltip Component
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -882,6 +892,14 @@ export default function Dashboard() {
               Estimated via 5-Fold TimeSeriesSplit validation.
             </div>
           </div>
+        </section>
+
+        {/* Map Integration */}
+        <section className="relative w-full h-[500px] border border-white/10 rounded-2xl overflow-hidden bg-slate-900/40 backdrop-blur-md shadow-xl mt-8">
+          <PakistanMap
+            selectedLocation={selectedLocation}
+            setSelectedLocation={setSelectedLocation}
+          />
         </section>
       </div>
     </div>

@@ -1,0 +1,79 @@
+# Implementation Plan: MapTiler Integration for Climate Change Dashboard
+
+Add an interactive MapTiler map to the climate change dashboard. This map will show all 55 meteorological weather stations as markers. Selecting a station or loading the dashboard will zoom the map to its location, and clicking a marker on the map will select that station in the dashboard.
+
+## User Review Required
+
+> [!IMPORTANT]
+> **MapTiler API Key**
+> We will use your provided API key `6EJobKlrqbFsfxl8gZlh` inside the code as requested.
+>
+> **CSS CDN Link**
+> We will add `<link href='https://cdn.maptiler.com/maptiler-sdk-js/v4.1.0/maptiler-sdk.css' rel='stylesheet' />` inside Next.js's layout file (`app/layout.tsx`).
+
+## Proposed Changes
+
+We will modify `globals.css`, `layout.tsx`, and `page.tsx` and create a new client-side component `PakistanMap.tsx`.
+
+---
+
+### Global Styling
+
+#### [MODIFY] [globals.css](file:///c:/Users/Midtown%20Computers/OneDrive/Desktop/climate%20reserach/climate_research_project/app/globals.css)
+- Append the requested stylesheet definitions for `body` and `#map`:
+  ```css
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+  }
+  ```
+
+---
+
+### Root Layout
+
+#### [MODIFY] [layout.tsx](file:///c:/Users/Midtown%20Computers/OneDrive/Desktop/climate%20reserach/climate_research_project/app/layout.tsx)
+- Insert the MapTiler CSS `<link>` inside the `<head>` of the HTML structure.
+
+---
+
+### Map Component
+
+#### [NEW] [PakistanMap.tsx](file:///c:/Users/Midtown%20Computers/OneDrive/Desktop/climate%20reserach/climate_research_project/components/PakistanMap.tsx)
+Create a new React client-side component:
+- Uses `@maptiler/sdk` to render the map inside `<div id="map"></div>`.
+- Set configuration API key to `'6EJobKlrqbFsfxl8gZlh'`.
+- Uses `MapStyle.STREETS` as requested.
+- Initialize the map centered on Pakistan `[69.3451, 30.3753]` with `zoom: 5`.
+- Load markers for all 55 weather stations with popups showing their names.
+- Setup bidirectional synchronization:
+  - Clicking a marker updates the parent `selectedLocation` state.
+  - When `selectedLocation` changes in the dropdown, fly/pan the map to the selected station's coordinates.
+
+---
+
+### Dashboard Page
+
+#### [MODIFY] [page.tsx](file:///c:/Users/Midtown%20Computers/OneDrive/Desktop/climate%20reserach/climate_research_project/app/page.tsx)
+- Dynamically import `PakistanMap` with `{ ssr: false }` to avoid Next.js SSR crashes with window/canvas objects.
+- Render the map container right below the "Milestone & Metrics Panel" (the section containing All-Time Climate Records, Global Warming Targets, and Model Performance Metrics).
+- Use a relatively positioned wrapper with a non-zero height (e.g., `relative w-full h-[500px] mt-8`) to bound the absolute-positioned `#map` div.
+
+---
+
+## Verification Plan
+
+### Automated Verification
+- Run Next.js build or type check to verify type safety: `npx tsc --noEmit`.
+
+### Manual Verification
+- Check that the map renders below the records/targets/metrics panels.
+- Select different locations from the dropdown and see the map fly to the respective marker.
+- Click any marker and see it update the selected station and reload the corresponding Recharts graphs.
