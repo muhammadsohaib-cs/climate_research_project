@@ -77,11 +77,7 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return;
 
-    const apiKey = process.env.NEXT_PUBLIC_MAPTILER_API_KEY;
-    if (!apiKey) {
-      console.error("MapTiler API Key is missing in .env.local!");
-      return;
-    }
+    const apiKey = process.env.NEXT_PUBLIC_MAPTILER_API_KEY || '6EJobKlrqbFsfxl8gZlh';
 
     // Set MapTiler API Key
     maptilersdk.config.apiKey = apiKey;
@@ -130,9 +126,9 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
 
     map.on("load", async () => {
       try {
-        // 1. Fetch GeoJSON for Pakistan Administrative Regions
+        // 1. Fetch GeoJSON for Pakistan Administrative Regions locally
         const pakData = await fetch(
-          "https://media.githubusercontent.com/media/wmgeolab/geoBoundaries/main/releaseData/gbOpen/PAK/ADM1/geoBoundaries-PAK-ADM1_simplified.geojson"
+          "/pakistan-adm1.json"
         ).then((res) => res.json());
 
         // Ensure map is still mounted
