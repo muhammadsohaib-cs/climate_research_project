@@ -154,9 +154,12 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return;
 
-    const apiKey = process.env.NEXT_PUBLIC_MAPTILER_API_KEY || '6EJobKlrqbFsfxl8gZlh';
+    const apiKey = process.env.NEXT_PUBLIC_MAPTILER_API_KEY || '';
+    if (!apiKey) {
+      console.warn('NEXT_PUBLIC_MAPTILER_API_KEY is not defined in environment variables (.env).');
+    }
 
-    // Set MapTiler API Key
+    // Set MapTiler API Key from environment variables
     maptilersdk.config.apiKey = apiKey;
 
     // Initialize Map with Streets style
