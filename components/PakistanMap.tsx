@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as maptilersdk from "@maptiler/sdk";
 import "@maptiler/sdk/dist/maptiler-sdk.css";
+import { Maximize2, Compass, Sparkles, Eye, MapPin, X, ChevronDown, ChevronUp, Layers } from 'lucide-react';
 
 // 55 Pakistan Meteorological Weather Stations Coordinates swapped to [Longitude, Latitude]
 const STATION_COORDS: Record<string, [number, number]> = {
@@ -63,80 +64,185 @@ const STATION_COORDS: Record<string, [number, number]> = {
   'Zhob': [69.45, 31.34]
 };
 
+// High-Contrast Climate Classification & Microclimate Colors
 const STATION_CLIMATE_COLORS: Record<string, string> = {
-  // 1. Extreme Min & Min Zone (#00E5FF & #0088FF — Cyan / Cobalt)
-  'Astore': '#00E5FF',
-  'Skardu': '#00E5FF',
-  'Gupis': '#00E5FF',
-  'Kalat': '#00E5FF',
-  'Murree': '#00E5FF',
-  'Gilgit': '#0088FF',
-  'Chilas': '#0088FF',
-  'Chitral': '#0088FF',
-  'Darosh': '#0088FF',
-  'Dir': '#0088FF',
-  'Kakul': '#0088FF',
-  'Parachinar': '#0088FF',
-  'Muzaffarabad': '#0088FF',
-  'Bunji': '#0088FF',
+  // 1. COLD DROUGHT / COLD ALPINE ZONE (#c026d3 — Electric Magenta)
+  'Astore': '#c026d3',
+  'Skardu': '#c026d3',
+  'Gupis': '#c026d3',
+  'Kalat': '#c026d3',
+  'Murree': '#c026d3',
 
-  // 2. Mild / Moderate Zone (#00C853 — Emerald Green)
-  'Quetta': '#00C853',
-  'Zhob': '#00C853',
-  'Balakot': '#00C853',
-  'Ghari Dupatta': '#00C853',
-  'Saidu Sharif': '#00C853',
-  'Cherat': '#00C853',
-  'Islamabad': '#00C853',
-  'Jhelum': '#00C853',
-  'Barkhan': '#00C853',
-  'Kotli': '#00C853',
+  // 2. WET LAND / HIGH PRECIPITATION (#0284c7 — Deep Cyan Blue)
+  'Gilgit': '#0284c7',
+  'Chilas': '#0284c7',
+  'Chitral': '#0284c7',
+  'Darosh': '#0284c7',
+  'Dir': '#0284c7',
+  'Kakul': '#0284c7',
+  'Parachinar': '#0284c7',
+  'Muzaffarabad': '#0284c7',
+  'Bunji': '#0284c7',
 
-  // 3. Warm / High Zone (#FFD600 & #FF6D00 — Gold / Orange)
-  'Peshawar': '#FFD600',
-  'Kohat': '#FFD600',
-  'Risalpur': '#FFD600',
-  'Sialkot': '#FFD600',
-  'Pasni': '#FFD600',
-  'Ormara': '#FFD600',
-  'Jiwani': '#FFD600',
-  'Lahore': '#FF6D00',
-  'Faisalabad': '#FF6D00',
-  'Sargodha': '#FF6D00',
-  'Mianwali': '#FF6D00',
-  'Karachi': '#FF6D00',
+  // 3. HUMID ZONE (#10b981 — Vibrant Emerald Green)
+  'Quetta': '#10b981',
+  'Zhob': '#10b981',
+  'Balakot': '#10b981',
+  'Ghari Dupatta': '#10b981',
+  'Saidu Sharif': '#10b981',
+  'Cherat': '#10b981',
+  'Islamabad': '#10b981',
+  'Jhelum': '#10b981',
+  'Barkhan': '#10b981',
+  'Kotli': '#10b981',
 
-  // 4. Extreme Max Zone (#D50000 — Crimson Red)
-  'Sibbi': '#D50000',
-  'Jacobabad': '#D50000',
-  'Nawabshah': '#D50000',
-  'Rohri': '#D50000',
-  'Mohin Jodaro': '#D50000',
-  'Padidan': '#D50000',
-  'Hyderabad': '#D50000',
-  'Badin': '#D50000',
-  'Chhor': '#D50000',
-  'D.I Khan': '#D50000',
-  'Multan': '#D50000',
-  'Bahawalpur': '#D50000',
-  'Bahawalnagar': '#D50000',
-  'Khanpur': '#D50000',
-  'Dalbandin': '#D50000',
-  'Nokkundi': '#D50000',
-  'Panjgur': '#D50000',
-  'Khuzdar': '#D50000',
-  'Lasbella': '#D50000'
+  // 4. ARID / SEMI-ARID ZONE (#eab308 — Golden Yellow)
+  'Peshawar': '#eab308',
+  'Kohat': '#eab308',
+  'Risalpur': '#eab308',
+  'Sialkot': '#eab308',
+  'Pasni': '#eab308',
+  'Ormara': '#eab308',
+  'Jiwani': '#eab308',
+  'Lahore': '#eab308',
+  'Faisalabad': '#eab308',
+  'Sargodha': '#eab308',
+  'Mianwali': '#eab308',
+  'Karachi': '#eab308',
+
+  // 5. DROUGHT / EXTREME HEAT ZONE (#dc2626 — Deep Crimson Red)
+  'Sibbi': '#dc2626',
+  'Jacobabad': '#dc2626',
+  'Nawabshah': '#dc2626',
+  'Rohri': '#dc2626',
+  'Mohin Jodaro': '#dc2626',
+  'Padidan': '#dc2626',
+  'Hyderabad': '#dc2626',
+  'Badin': '#dc2626',
+  'Chhor': '#dc2626',
+  'D.I Khan': '#dc2626',
+  'Multan': '#dc2626',
+  'Bahawalpur': '#dc2626',
+  'Bahawalnagar': '#dc2626',
+  'Khanpur': '#dc2626',
+  'Dalbandin': '#dc2626',
+  'Nokkundi': '#dc2626',
+  'Panjgur': '#dc2626',
+  'Khuzdar': '#dc2626',
+  'Lasbella': '#dc2626'
+};
+
+// Microclimate Scientific Explanations
+const CITY_MICROCLIMATE_EXPLANATION: Record<string, { label: string; range: string; note: string }> = {
+  'Islamabad': {
+    label: 'Humid Sub-Tropical Oasis',
+    range: '24°C – 34°C (1,200mm Rain)',
+    note: 'Humid Green 🟩 microclimate inside the Arid Yellow 🟨 Punjab plain due to Margalla foothill rainfall & dense forest.'
+  },
+  'Murree': {
+    label: 'Alpine Cold Hill Station',
+    range: '12°C – 22°C (Sub-Zero Snow)',
+    note: 'Cold Alpine Magenta 🟪 microclimate isolated high above the warm Punjab agricultural plains.'
+  },
+  'Quetta': {
+    label: 'High Mountain Valley Oasis',
+    range: '15°C – 31°C (1,680m Elevation)',
+    note: 'Humid Green 🟩 valley climate isolated inside the surrounding dry desert plateau of Balochistan.'
+  },
+  'Kalat': {
+    label: 'High-Elevation Cold Plateau',
+    range: '10°C – 26°C (2,000m Elevation)',
+    note: 'Cold Magenta 🟪 plateau climate standing out distinctly against hot Balochistan deserts.'
+  },
+  'Jhelum': {
+    label: 'Sub-Himalayan Humid Belt',
+    range: '25°C – 36°C (850mm Rain)',
+    note: 'Humid Green 🟩 microclimate transition at the northern edge of Punjab plains.'
+  },
+  'Jacobabad': {
+    label: 'Global Heat Epicenter',
+    range: '38°C – 52°C Peak',
+    note: 'Deep Crimson Red 🟥 extreme heat zone recording Asia’s highest summer surface heat index.'
+  },
+  'Skardu': {
+    label: 'Karakoram Glacial Valley',
+    range: '5°C – 20°C (Frozen Winters)',
+    note: 'Cold Alpine Magenta 🟪 glacial valley surrounded by 7,000m snow peaks.'
+  },
+  'Muzaffarabad': {
+    label: 'Montane Wetland Corridor',
+    range: '18°C – 28°C (1,400mm Rain)',
+    note: 'Wet Land Blue 🟦 climate corridor benefiting from heavy monsoon moisture.'
+  }
+};
+
+// Province Metadata
+const PROVINCE_CLIMATE_META: Record<string, {
+  tempRange: string;
+  avgMax: string;
+  zoneName: string;
+  color: string;
+  description: string;
+}> = {
+  'Sindh': {
+    tempRange: '38°C – 48°C',
+    avgMax: '43.2°C',
+    zoneName: 'Drought & Extreme Heat Belt',
+    color: '#dc2626',
+    description: 'Lower Indus basin characterized by severe summer thermal stress and low annual precipitation.'
+  },
+  'Balochistan': {
+    tempRange: '32°C – 46°C',
+    avgMax: '40.5°C',
+    zoneName: 'Arid Desert Plateau',
+    color: '#b91c1c',
+    description: 'Vast rocky plateau & desert terrain with extreme daily temperature swings and dry desert winds.'
+  },
+  'Punjab': {
+    tempRange: '30°C – 41°C',
+    avgMax: '36.8°C',
+    zoneName: 'Arid / Semi-Arid Agricultural Plains',
+    color: '#eab308',
+    description: 'Alluvial plains receiving warm summer sun and seasonal monsoons. Contains Humid (Islamabad) & Cold (Murree) microclimates.'
+  },
+  'Khyber Pakhtunkhwa': {
+    tempRange: '24°C – 35°C',
+    avgMax: '31.2°C',
+    zoneName: 'Humid & Sub-Himalayan Foothills',
+    color: '#10b981',
+    description: 'Montane terrain benefiting from high monsoon precipitation and river basin corridors.'
+  },
+  'Azad Kashmir': {
+    tempRange: '18°C – 28°C',
+    avgMax: '24.5°C',
+    zoneName: 'Wet Land / Sub-Alpine Corridor',
+    color: '#0284c7',
+    description: 'High precipitation montane valleys with rich temperate forests and abundant rivers.'
+  },
+  'Gilgit-Baltistan': {
+    tempRange: '10°C – 22°C',
+    avgMax: '17.8°C',
+    zoneName: 'Cold Alpine & Glacial Zone',
+    color: '#c026d3',
+    description: 'High Karakoram range with massive glaciers, sub-zero winters, and alpine cold drought.'
+  },
+  'Islamabad Capital Territory': {
+    tempRange: '26°C – 36°C',
+    avgMax: '32.1°C',
+    zoneName: 'Humid Sub-Tropical Foothill Island',
+    color: '#10b981',
+    description: 'Margalla hills foothill zone enjoying 1,200mm annual precipitation, creating a green Humid Oasis.'
+  }
 };
 
 const getClimateLabel = (color: string | undefined): string => {
   switch (color) {
-    case '#D50000': return 'Extreme Max (>42°C)';
-    case '#FF6D00': return 'High Temp (Plains)';
-    case '#FFD600': return 'Warm Temp (Plains/Coast)';
-    case '#00C853': return 'Mild / Moderate';
-    case '#0088FF': return 'Min Low (Alpine)';
-    case '#00E5FF': return 'Extreme Min (Sub-Zero)';
-    default: return 'Mild / Moderate';
+    case '#dc2626': return 'Drought / Extreme Heat (>42°C)';
+    case '#eab308': return 'Arid / Semi-Arid (Plains)';
+    case '#10b981': return 'Humid Zone (Foothills)';
+    case '#0284c7': return 'Wet Land / High Precip';
+    case '#c026d3': return 'Cold Drought / Alpine';
+    default: return 'Humid Zone';
   }
 };
 
@@ -151,6 +257,13 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
   const markersRef = useRef<Record<string, maptilersdk.Marker>>({});
   const isInitialMount = useRef(true);
 
+  // Layout UI states
+  const [activeRegion, setActiveRegion] = useState<string | null>(null);
+  const [showMicroclimateHalos, setShowMicroclimateHalos] = useState<boolean>(true);
+  const [showCityLabels, setShowCityLabels] = useState<boolean>(true);
+  const [isLegendOpen, setIsLegendOpen] = useState<boolean>(true);
+  const [dismissCard, setDismissCard] = useState<boolean>(false);
+
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return;
 
@@ -159,37 +272,51 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
       console.warn('NEXT_PUBLIC_MAPTILER_API_KEY is not defined in environment variables (.env).');
     }
 
-    // Set MapTiler API Key from environment variables
     maptilersdk.config.apiKey = apiKey;
 
-    // Initialize Map with Streets style
+    // Initialize Map
     const map = new maptilersdk.Map({
       container: mapContainer.current,
-      style: maptilersdk.MapStyle.STREETS, // Streets style
-      center: [69.3451, 30.3753], // Centered on Pakistan
-      zoom: 5,
-      minZoom: 4.5,
-      // Lock camera navigation to Pakistan's bounding box
+      style: maptilersdk.MapStyle.DATAVIZ.DARK,
+      center: [69.3451, 30.3753],
+      zoom: 4.8,
+      minZoom: 2.0,
       maxBounds: [
-        [58.0, 22.0], // Southwest boundary
-        [80.0, 38.0], // Northeast boundary
+        [35.0, 5.0],
+        [100.0, 50.0],
       ],
     });
 
+    // Navigation Controls positioned cleanly on top-right
+    map.addControl(new maptilersdk.NavigationControl({ visualizePitch: true }), 'top-right');
     mapRef.current = map;
 
-    // Plot all 55 weather stations as markers
+    // Add Markers for all 55 Weather Stations
     Object.entries(STATION_COORDS).forEach(([name, coords]) => {
-      const popup = new maptilersdk.Popup({ offset: 25 }).setHTML(
-        `<div style="color: #0f172a; padding: 4px; font-family: sans-serif;">
-          <h4 style="margin: 0; font-weight: 700; font-size: 13px;">${name}</h4>
-          <p style="margin: 4px 0 0 0; font-size: 11px; color: #475569;">Weather Station</p>
-         </div>`
-      );
+      const color = STATION_CLIMATE_COLORS[name] || '#10b981';
+      const microInfo = CITY_MICROCLIMATE_EXPLANATION[name];
 
-      const markerColor = STATION_CLIMATE_COLORS[name] || '#00C853';
+      const popupHtml = `
+        <div style="color: #0f172a; padding: 8px; font-family: system-ui, sans-serif; max-width: 220px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+            <h4 style="margin: 0; font-weight: 800; font-size: 14px; color: #0f172a;">${name}</h4>
+            <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${color}; border: 1px solid #fff;"></span>
+          </div>
+          <div style="font-size: 11px; font-weight: 700; color: ${color}; margin-bottom: 4px;">
+            ${getClimateLabel(color)}
+          </div>
+          ${microInfo ? `
+            <div style="background-color: #f1f5f9; border-left: 3px solid ${color}; padding: 4px 6px; border-radius: 4px; margin-top: 6px; font-size: 10px; color: #334155; line-height: 1.3;">
+              <strong>Microclimate:</strong> ${microInfo.note}
+            </div>
+          ` : ''}
+        </div>
+      `;
+
+      const popup = new maptilersdk.Popup({ offset: 25, closeButton: false }).setHTML(popupHtml);
+
       const marker = new maptilersdk.Marker({
-        color: markerColor
+        color: color
       })
         .setLngLat(coords)
         .setPopup(popup)
@@ -198,18 +325,17 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
       const pinSvg = marker.getElement().querySelector('svg path');
       if (pinSvg) {
         if (name === selectedLocation) {
-          pinSvg.setAttribute('stroke', '#1e293b'); // Dark Slate border for selected
-          pinSvg.setAttribute('stroke-width', '3');
+          pinSvg.setAttribute('stroke', '#ffffff');
+          pinSvg.setAttribute('stroke-width', '3.5');
         } else {
-          pinSvg.setAttribute('stroke', '#ffffff'); // White border for default
+          pinSvg.setAttribute('stroke', '#090d16');
           pinSvg.setAttribute('stroke-width', '1.5');
         }
       }
 
-      // Listen for click event to update the selected station in dashboard
       marker.getElement().addEventListener('click', (e) => {
-        // Prevent map click handler from triggering other popups
         e.stopPropagation();
+        setDismissCard(false);
         setSelectedLocation(name);
       });
 
@@ -218,15 +344,10 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
 
     map.on("load", async () => {
       try {
-        // 1. Fetch GeoJSON for Pakistan Administrative Regions locally
-        const pakData = await fetch(
-          "/pakistan-adm1.json"
-        ).then((res) => res.json());
-
-        // Ensure map is still mounted
+        const pakData = await fetch("/pakistan-adm1.json").then((res) => res.json());
         if (!mapRef.current) return;
 
-        // 2. Build Inverted Mask (World Box with Pakistan Polygon Cut Out)
+        // 1. Build World Mask
         const pakHoles = pakData.features.map(
           (feature: any) => feature.geometry.coordinates[0]
         );
@@ -239,7 +360,6 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
               geometry: {
                 type: "Polygon",
                 coordinates: [
-                  // Global bounding box
                   [
                     [-180, -90],
                     [180, -90],
@@ -247,14 +367,13 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
                     [-180, 90],
                     [-180, -90],
                   ],
-                  ...pakHoles, // Subtracts Pakistan's shape
+                  ...pakHoles,
                 ],
               },
             },
           ],
         };
 
-        // 3. Add World Mask Layer (Hides Outside Countries with Light Slate)
         map.addSource("world-mask", {
           type: "geojson",
           data: maskGeoJSON as any,
@@ -265,12 +384,12 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
           type: "fill",
           source: "world-mask",
           paint: {
-            "fill-color": "#E2E8F0", // Soft light slate gray matching the light map
-            "fill-opacity": 0.95,
+            "fill-color": "#090d16",
+            "fill-opacity": 0.88,
           },
         });
 
-        // 4. Add Pakistan Region Polygons (Harmonized Color Palette)
+        // 2. Add Regional Polygon Layer
         map.addSource("pakistan-regions", {
           type: "geojson",
           data: pakData,
@@ -284,33 +403,102 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
             "fill-color": [
               "match",
               ["get", "shapeName"],
-              "Punjab", "#FF6D00",                      // Warm/High -> Blaze Orange
-              "Islamabad Capital Territory", "#00C853", // Mild/Moderate -> Emerald Green
-              "Sindh", "#D50000",                       // Extreme Max -> Crimson Red
-              "Balochistan", "#D50000",                 // Extreme Max -> Crimson Red (Sibi/Dalbandin/etc.)
-              "Khyber Pakhtunkhwa", "#0088FF",          // Min (Low) -> Cobalt Blue
-              "Azad Kashmir", "#0088FF",                // Min (Low) -> Cobalt Blue
-              "Gilgit-Baltistan", "#00E5FF",            // Extreme Min -> Electric Cyan
-              "#00C853",                                // Fallback Mild/Moderate -> Emerald Green
+              "Gilgit-Baltistan", "#c026d3",           // Cold Alpine -> Magenta
+              "Azad Kashmir", "#0284c7",               // Wet Land -> Blue
+              "Khyber Pakhtunkhwa", "#10b981",         // Humid -> Emerald Green
+              "Islamabad Capital Territory", "#10b981",// Humid -> Emerald Green
+              "Punjab", "#eab308",                     // Warm / Arid -> Golden Yellow
+              "Sindh", "#dc2626",                      // Extreme Heat -> Crimson Red
+              "Balochistan", "#b91c1c",                // Extreme Heat -> Dark Crimson Red
+              "#10b981",
             ],
-            "fill-opacity": 0.6,               // 60% opacity for clear, distinct coloring
+            "fill-opacity": 0.58,
           },
         });
 
-        // 5. Add Region Outline Borders
         map.addLayer({
           id: "regions-border",
           type: "line",
           source: "pakistan-regions",
           paint: {
-            "line-color": "rgba(255, 255, 255, 0.7)", // Semi-transparent White border for premium visual separation
-            "line-width": 1.5,
+            "line-color": "rgba(255, 255, 255, 0.85)",
+            "line-width": 1.6,
           },
         });
 
-        // 6. Mouse Interactions & Popups
-        map.on("mousemove", "regions-fill", () => {
+        // 3. Add Station Microclimate Glow Aura Layer
+        const stationPointFeatures = Object.entries(STATION_COORDS).map(([name, coords]) => ({
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: coords },
+          properties: {
+            name,
+            color: STATION_CLIMATE_COLORS[name] || '#10b981',
+            isMicroclimate: !!CITY_MICROCLIMATE_EXPLANATION[name],
+          }
+        }));
+
+        map.addSource("station-glow-source", {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            features: stationPointFeatures
+          } as any
+        });
+
+        map.addLayer({
+          id: "station-glow-layer",
+          type: "circle",
+          source: "station-glow-source",
+          paint: {
+            "circle-color": ["get", "color"],
+            "circle-radius": [
+              "case",
+              ["get", "isMicroclimate"], 15, 10
+            ],
+            "circle-opacity": 0.65,
+            "circle-blur": 0.4,
+            "circle-stroke-width": [
+              "case",
+              ["get", "isMicroclimate"], 2.5, 1.0
+            ],
+            "circle-stroke-color": "#ffffff"
+          }
+        });
+
+        // 4. ADD HIGH-CONTRAST BOLD CITY LABELS DIRECTLY ON THE MAP CANVAS
+        map.addLayer({
+          id: "station-city-labels-layer",
+          type: "symbol",
+          source: "station-glow-source",
+          layout: {
+            "text-field": ["get", "name"],
+            "text-font": ["Noto Sans Bold", "Open Sans Bold"],
+            "text-size": [
+              "interpolate", ["linear"], ["zoom"],
+              4.5, 9.5,
+              7, 12,
+              10, 14
+            ],
+            "text-offset": [0, 1.15],
+            "text-anchor": "top",
+            "text-allow-overlap": false,
+            "text-ignore-placement": false
+          },
+          paint: {
+            "text-color": "#ffffff",
+            "text-halo-color": "#000000",
+            "text-halo-width": 2.5,
+            "text-halo-blur": 0.5
+          }
+        });
+
+        // Mouse Hover & Click Events
+        map.on("mousemove", "regions-fill", (e) => {
           map.getCanvas().style.cursor = "pointer";
+          if (e.features && e.features[0]) {
+            const name = e.features[0].properties?.shapeName;
+            if (name) setActiveRegion(name);
+          }
         });
 
         map.on("mouseleave", "regions-fill", () => {
@@ -319,23 +507,15 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
 
         map.on("click", "regions-fill", (e) => {
           if (!e.features || !e.features[0]) return;
-          const name = e.features[0].properties?.shapeName || "Region";
-
-          new maptilersdk.Popup()
-            .setLngLat(e.lngLat)
-            .setHTML(
-              `<div style="
-                color: #0F172A; 
-                font-family: sans-serif; 
-                font-weight: 600; 
-                font-size: 14px; 
-                padding: 4px 6px;
-              ">${name}</div>`
-            )
-            .addTo(map);
+          const name = e.features[0].properties?.shapeName;
+          if (name) {
+            setDismissCard(false);
+            setActiveRegion(name);
+          }
         });
+
       } catch (err) {
-        console.error("Error loading regional map boundaries GeoJSON:", err);
+        console.error("Error loading regional map GeoJSON:", err);
       }
     });
 
@@ -349,26 +529,44 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
     };
   }, []);
 
-  // Sync selected location
+  // Sync selected location & visibility properties
   useEffect(() => {
     if (!mapRef.current) return;
 
     const shouldFly = !isInitialMount.current;
     isInitialMount.current = false;
 
-    // Update marker colors based on selection
+    // Toggle Station Glow Layer Visibility
+    if (mapRef.current.getLayer("station-glow-layer")) {
+      mapRef.current.setLayoutProperty(
+        "station-glow-layer",
+        "visibility",
+        showMicroclimateHalos ? "visible" : "none"
+      );
+    }
+
+    // Toggle City Labels Visibility
+    if (mapRef.current.getLayer("station-city-labels-layer")) {
+      mapRef.current.setLayoutProperty(
+        "station-city-labels-layer",
+        "visibility",
+        showCityLabels ? "visible" : "none"
+      );
+    }
+
+    // Update marker strokes
     Object.entries(markersRef.current).forEach(([name, marker]) => {
       const element = marker.getElement();
       const pinSvg = element.querySelector('svg path');
       if (pinSvg) {
-        const markerColor = STATION_CLIMATE_COLORS[name] || '#00C853';
-        pinSvg.setAttribute('fill', markerColor); // Fill stays its climate color
+        const markerColor = STATION_CLIMATE_COLORS[name] || '#10b981';
+        pinSvg.setAttribute('fill', markerColor);
         
         if (name === selectedLocation) {
-          pinSvg.setAttribute('stroke', '#1e293b'); // Dark Slate border for selected
-          pinSvg.setAttribute('stroke-width', '3');
+          pinSvg.setAttribute('stroke', '#ffffff');
+          pinSvg.setAttribute('stroke-width', '3.5');
         } else {
-          pinSvg.setAttribute('stroke', '#ffffff'); // White border for default
+          pinSvg.setAttribute('stroke', '#090d16');
           pinSvg.setAttribute('stroke-width', '1.5');
         }
       }
@@ -378,17 +576,14 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
       if (shouldFly) {
         mapRef.current.flyTo({
           center: [69.3451, 30.3753],
-          zoom: 5,
+          zoom: 4.8,
           essential: true
         });
       }
       
-      // Close all popups
       Object.values(markersRef.current).forEach(marker => {
         const popup = marker.getPopup();
-        if (popup && popup.isOpen()) {
-          marker.togglePopup();
-        }
+        if (popup && popup.isOpen()) marker.togglePopup();
       });
     } else {
       const coords = STATION_COORDS[selectedLocation];
@@ -396,17 +591,15 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
         if (shouldFly) {
           mapRef.current.flyTo({
             center: coords,
-            zoom: 8.5,
+            zoom: 8.2,
             essential: true
           });
         }
 
-        // Open popup for selected station
         const marker = markersRef.current[selectedLocation];
         if (marker) {
           const popup = marker.getPopup();
           if (popup && !popup.isOpen()) {
-            // Close other open popups first
             Object.entries(markersRef.current).forEach(([name, m]) => {
               if (name !== selectedLocation) {
                 const p = m.getPopup();
@@ -418,93 +611,293 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
         }
       }
     }
-  }, [selectedLocation]);
+  }, [selectedLocation, showMicroclimateHalos, showCityLabels]);
+
+  // Reset Zoom Handler
+  const handleResetZoom = () => {
+    if (!mapRef.current) return;
+    mapRef.current.flyTo({
+      center: [69.3451, 30.3753],
+      zoom: 4.8,
+      essential: true
+    });
+    setSelectedLocation('National');
+    setActiveRegion(null);
+    setDismissCard(false);
+  };
+
+  const selectedMicroInfo = CITY_MICROCLIMATE_EXPLANATION[selectedLocation];
+  const activeRegionMeta = activeRegion ? PROVINCE_CLIMATE_META[activeRegion] : null;
 
   return (
-    <div style={{ width: "100%", height: "100%", position: "relative" }}>
+    <div style={{ width: "100%", height: "100%", position: "relative", overflow: "hidden" }}>
       <div ref={mapContainer} id="map" style={{ width: "100%", height: "100%", borderRadius: "8px" }} />
       
-      {/* Selected Location Card */}
+      {/* Top Left Slim Glassmorphism Toolbar (Non-Overlapping Single Line Bar) */}
       <div style={{
         position: 'absolute',
         top: '12px',
         left: '12px',
-        backgroundColor: '#1E293B',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        borderRadius: '8px',
-        padding: '8px 12px',
-        color: '#f8fafc',
-        fontFamily: 'sans-serif',
-        fontSize: '11px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
         zIndex: 10,
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+        backgroundColor: 'rgba(15, 23, 42, 0.92)',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
+        borderRadius: '8px',
+        padding: '6px 10px',
+        backdropFilter: 'blur(8px)',
+        boxShadow: '0 4px 14px rgba(0, 0, 0, 0.6)',
+        flexWrap: 'wrap',
+        maxWidth: 'calc(100% - 120px)',
       }}>
-        <div style={{ color: '#94a3b8', fontSize: '9px', textTransform: 'uppercase', fontWeight: 600 }}>Active Scope</div>
-        <div style={{ fontWeight: 'bold', fontSize: '13px', marginTop: '2px' }}>
-          {selectedLocation === 'National' ? 'National Average' : selectedLocation}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+        {/* Scope Indicator Badge */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', borderRight: '1px solid rgba(255,255,255,0.15)', paddingRight: '10px' }}>
+          <MapPin size={13} className="text-emerald-400" />
+          <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#ffffff' }}>
+            {selectedLocation === 'National' ? 'National Average' : selectedLocation}
+          </span>
           <span style={{ 
-            display: 'inline-block', 
             width: '8px', 
             height: '8px', 
             borderRadius: '50%', 
-            backgroundColor: selectedLocation === 'National' ? '#FFD600' : (STATION_CLIMATE_COLORS[selectedLocation] || '#00C853') 
+            backgroundColor: selectedLocation === 'National' ? '#eab308' : (STATION_CLIMATE_COLORS[selectedLocation] || '#10b981'),
+            boxShadow: '0 0 6px rgba(255,255,255,0.6)'
           }}></span>
-          <span style={{ fontSize: '10px', color: '#cbd5e1' }}>
-            {selectedLocation === 'National' 
-              ? 'Warm Zone (Country Average)' 
-              : getClimateLabel(STATION_CLIMATE_COLORS[selectedLocation])}
-          </span>
+        </div>
+
+        {/* Quick Action Buttons */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <button
+            onClick={handleResetZoom}
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '5px',
+              padding: '4px 8px',
+              color: '#38bdf8',
+              fontSize: '10.5px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+            title="Zoom out fully to view full Pakistan map"
+          >
+            <Maximize2 size={11} />
+            <span>Fit Country</span>
+          </button>
+
+          <button
+            onClick={() => setShowMicroclimateHalos(!showMicroclimateHalos)}
+            style={{
+              backgroundColor: showMicroclimateHalos ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.08)',
+              border: showMicroclimateHalos ? '1px solid #10b981' : '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '5px',
+              padding: '4px 8px',
+              color: showMicroclimateHalos ? '#34d399' : '#94a3b8',
+              fontSize: '10.5px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+            title="Toggle city microclimate glowing halos"
+          >
+            <Eye size={11} />
+            <span>{showMicroclimateHalos ? 'Glow ON' : 'Glow OFF'}</span>
+          </button>
+
+          <button
+            onClick={() => setShowCityLabels(!showCityLabels)}
+            style={{
+              backgroundColor: showCityLabels ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.08)',
+              border: showCityLabels ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '5px',
+              padding: '4px 8px',
+              color: showCityLabels ? '#38bdf8' : '#94a3b8',
+              fontSize: '10.5px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+            title="Toggle bold city names on map"
+          >
+            <Sparkles size={11} />
+            <span>{showCityLabels ? 'Labels ON' : 'Labels OFF'}</span>
+          </button>
         </div>
       </div>
 
-      {/* Map Legend Overlay */}
+      {/* Bottom-Left Floating Explainer Card (Positioned Cleanly Without Overlapping Top Bar or Legend) */}
+      {!dismissCard && (selectedMicroInfo || activeRegionMeta) && (
+        <div style={{
+          position: 'absolute',
+          bottom: '12px',
+          left: '12px',
+          zIndex: 10,
+          maxWidth: '320px',
+          backgroundColor: 'rgba(15, 23, 42, 0.95)',
+          border: `1px solid ${selectedMicroInfo ? (STATION_CLIMATE_COLORS[selectedLocation] || '#10b981') : (activeRegionMeta?.color || '#38bdf8')}`,
+          borderRadius: '8px',
+          padding: '10px 12px',
+          color: '#f8fafc',
+          boxShadow: '0 8px 20px rgba(0, 0, 0, 0.8)',
+          backdropFilter: 'blur(8px)',
+        }}>
+          {/* Dismiss Close Button */}
+          <button
+            onClick={() => setDismissCard(true)}
+            style={{
+              position: 'absolute',
+              top: '6px',
+              right: '6px',
+              background: 'transparent',
+              border: 'none',
+              color: '#94a3b8',
+              cursor: 'pointer',
+              padding: '2px',
+            }}
+            title="Dismiss Explainer Card"
+          >
+            <X size={14} />
+          </button>
+
+          {selectedMicroInfo ? (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: STATION_CLIMATE_COLORS[selectedLocation] }}>
+                <Sparkles size={13} />
+                <strong style={{ fontSize: '12px' }}>{selectedLocation}: {selectedMicroInfo.label}</strong>
+              </div>
+              <div style={{ fontSize: '10px', color: '#cbd5e1', marginTop: '3px', fontWeight: 600 }}>
+                Temp & Precip: {selectedMicroInfo.range}
+              </div>
+              <div style={{ marginTop: '6px', fontSize: '10.5px', color: '#e2e8f0', lineHeight: 1.35, backgroundColor: 'rgba(255,255,255,0.05)', padding: '6px', borderRadius: '4px' }}>
+                {selectedMicroInfo.note}
+              </div>
+            </div>
+          ) : activeRegionMeta ? (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingRight: '16px' }}>
+                <strong style={{ fontSize: '12px', color: '#ffffff' }}>{activeRegion} Region</strong>
+                <span style={{ fontSize: '10.5px', fontWeight: 700, color: activeRegionMeta.color }}>
+                  {activeRegionMeta.avgMax} Avg Max
+                </span>
+              </div>
+              <div style={{ color: '#cbd5e1', fontSize: '10px', marginTop: '3px', fontWeight: 600 }}>
+                Zone: {activeRegionMeta.zoneName} ({activeRegionMeta.tempRange})
+              </div>
+              <div style={{ marginTop: '6px', fontSize: '10px', color: '#94a3b8', lineHeight: 1.35 }}>
+                {activeRegionMeta.description}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      )}
+
+      {/* Bottom-Right Collapsible Climate Scale & Legend */}
       <div style={{
         position: 'absolute',
         bottom: '12px',
         right: '12px',
-        backgroundColor: 'rgba(15, 23, 42, 0.95)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
+        backgroundColor: 'rgba(11, 17, 32, 0.95)',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
         borderRadius: '8px',
-        padding: '10px 12px',
+        padding: isLegendOpen ? '10px 14px' : '6px 10px',
         color: '#f8fafc',
         fontFamily: 'sans-serif',
         fontSize: '10px',
         zIndex: 10,
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
-        backdropFilter: 'blur(4px)',
-        pointerEvents: 'none',
+        boxShadow: '0 6px 16px rgba(0, 0, 0, 0.7)',
+        backdropFilter: 'blur(8px)',
+        maxWidth: '280px',
+        transition: 'all 0.2s ease',
       }}>
-        <div style={{ fontWeight: 'bold', marginBottom: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '4px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Climate Zones
+        {/* Legend Header & Collapse Toggle */}
+        <div 
+          onClick={() => setIsLegendOpen(!isLegendOpen)}
+          style={{ 
+            fontWeight: 'bold', 
+            marginBottom: isLegendOpen ? '8px' : '0px', 
+            borderBottom: isLegendOpen ? '1px solid rgba(255, 255, 255, 0.15)' : 'none', 
+            paddingBottom: isLegendOpen ? '4px' : '0px', 
+            fontSize: '10.5px', 
+            textTransform: 'uppercase', 
+            letterSpacing: '0.05em',
+            color: '#e2e8f0',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            cursor: 'pointer'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Compass size={12} className="text-amber-400" />
+            <span>Climate Temperature Scale</span>
+          </div>
+          <button style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 0 }}>
+            {isLegendOpen ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+          </button>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#D50000', border: '1px solid #fff' }}></span>
-            <span>Extreme Max (&gt;42°C+)</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#FF6D00', border: '1px solid #fff' }}></span>
-            <span>High Temp (Plains)</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#FFD600', border: '1px solid #fff' }}></span>
-            <span>Warm Temp (Plains/Coast)</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#00C853', border: '1px solid #fff' }}></span>
-            <span>Mild / Moderate</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#0088FF', border: '1px solid #fff' }}></span>
-            <span>Min (Low / alpine)</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#00E5FF', border: '1px solid #fff' }}></span>
-            <span>Extreme Min (Sub-Zero)</span>
-          </div>
-        </div>
+
+        {isLegendOpen && (
+          <>
+            {/* Vertical Gradient Bar & Labels */}
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <div style={{
+                width: '10px',
+                height: '130px',
+                borderRadius: '3px',
+                background: 'linear-gradient(to top, #c026d3 0%, #0284c7 25%, #10b981 50%, #eab308 75%, #dc2626 100%)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                boxShadow: '0 0 6px rgba(0,0,0,0.5)',
+                flexShrink: 0,
+              }} />
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', flex: 1 }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontWeight: 700, color: '#f87171', fontSize: '10px' }}>DROUGHT / EXTREME HEAT (&gt;42°C)</span>
+                  <span style={{ color: '#94a3b8', fontSize: '8.5px' }}>Sindh & S. Balochistan (Red 🟥)</span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontWeight: 700, color: '#facc15', fontSize: '10px' }}>ARID / WARM PLAINS (30–41°C)</span>
+                  <span style={{ color: '#94a3b8', fontSize: '8.5px' }}>Punjab Agricultural Plains (Yellow 🟨)</span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontWeight: 700, color: '#34d399', fontSize: '10px' }}>HUMID ZONE (24–35°C)</span>
+                  <span style={{ color: '#94a3b8', fontSize: '8.5px' }}>KP Foothills & Islamabad Oasis (Green 🟩)</span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontWeight: 700, color: '#38bdf8', fontSize: '10px' }}>WET LAND / ALPINE (18–28°C)</span>
+                  <span style={{ color: '#94a3b8', fontSize: '8.5px' }}>Azad Kashmir Valleys (Blue 🟦)</span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontWeight: 700, color: '#e879f9', fontSize: '10px' }}>COLD ALPINE / GLACIAL (10–22°C)</span>
+                  <span style={{ color: '#94a3b8', fontSize: '8.5px' }}>Gilgit-Baltistan & Murree (Magenta 🟪)</span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{
+              marginTop: '6px',
+              paddingTop: '4px',
+              borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+              fontSize: '8.5px',
+              color: '#94a3b8',
+              lineHeight: 1.2,
+            }}>
+              💡 Bold white labels & glowing halos highlight localized city microclimates.
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
