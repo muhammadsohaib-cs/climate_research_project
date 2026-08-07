@@ -163,8 +163,9 @@ def create_json():
                 "forecastMinUpper": f_min_u,
             })
 
-        selected_models = loc_ml.get('selected_models', {'max': 'GB', 'min': 'GB', 'peak': 'GB'})
-        cv_mse = loc_ml.get('cv_mse', {'max': 0.4171, 'min': 0.1941, 'peak': 0.45})
+        selected_models = loc_ml.get('selected_models', {'max': 'ENSEMBLE', 'min': 'ENSEMBLE', 'peak': 'ENSEMBLE'})
+        cv_rmse = loc_ml.get('cv_rmse', loc_ml.get('cv_mse', {'max': 0.57, 'min': 0.45, 'peak': 0.68}))
+        cv_mae = loc_ml.get('cv_mae', {'max': 0.48, 'min': 0.38, 'peak': 0.53})
 
         station_data[loc] = {
             "historical": loc_historical,
@@ -173,10 +174,17 @@ def create_json():
                 "peakTrendPerDecade": loc_ml.get('peak_trend_per_decade', 0.171),
                 "maxTrendPerDecade": loc_ml.get('max_trend_per_decade', 0.171),
                 "minTrendPerDecade": loc_ml.get('min_trend_per_decade', 0.171),
-                "selectedModelMax": selected_models.get('max', 'GB'),
-                "selectedModelMin": selected_models.get('min', 'GB'),
-                "cvMseMax": cv_mse.get('max', 0.4171),
-                "cvMseMin": cv_mse.get('min', 0.1941)
+                "selectedModelMax": selected_models.get('max', 'ENSEMBLE'),
+                "selectedModelMin": selected_models.get('min', 'ENSEMBLE'),
+                "selectedModelPeak": selected_models.get('peak', 'ENSEMBLE'),
+                "cvRmseMax": cv_rmse.get('max', 0.57),
+                "cvRmseMin": cv_rmse.get('min', 0.45),
+                "cvRmsePeak": cv_rmse.get('peak', 0.68),
+                "cvMaeMax": cv_mae.get('max', 0.48),
+                "cvMaeMin": cv_mae.get('min', 0.38),
+                "cvMaePeak": cv_mae.get('peak', 0.53),
+                "cvMseMax": round(cv_rmse.get('max', 0.57)**2, 4),
+                "cvMseMin": round(cv_rmse.get('min', 0.45)**2, 4)
             }
         }
 

@@ -1,5 +1,6 @@
 import os
 import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import pandas as pd
 from generate_corrected_climate_dataset import build_corrected_dataset
 from data_prep import build_tabular_ml_dataset
