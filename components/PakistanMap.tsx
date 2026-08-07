@@ -5,6 +5,13 @@ import * as maptilersdk from "@maptiler/sdk";
 import "@maptiler/sdk/dist/maptiler-sdk.css";
 import { Maximize2, Compass, Sparkles, Eye, MapPin, X, ChevronDown, ChevronUp, Layers } from 'lucide-react';
 
+const REMOVED_STATIONS = new Set<string>([
+  'Chitral', 'Mohin Jodaro', 'Badin', 'Ormara', 'Lasbella',
+  'Risalpur', 'Lahore', 'Kohat', 'Multan', 'Peshawar',
+  'Khuzdar', 'Saidu Sharif', 'Barkhan', 'Jiwani', 'Kalat',
+  'Rohri', 'Dir', 'Cherat', 'Passni', 'Pasni', 'Astore', 'Sibbi'
+]);
+
 // 55 Pakistan Meteorological Weather Stations Coordinates swapped to [Longitude, Latitude]
 const STATION_COORDS: Record<string, [number, number]> = {
   'Astore': [74.90, 35.36],
@@ -288,56 +295,58 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
     map.addControl(new maptilersdk.NavigationControl({ visualizePitch: true }), 'top-right');
     mapRef.current = map;
 
-    // Add Markers for all 55 Weather Stations
-    Object.entries(STATION_COORDS).forEach(([name, coords]) => {
-      const color = STATION_CLIMATE_COLORS[name] || '#10b981';
-      const microInfo = CITY_MICROCLIMATE_EXPLANATION[name];
+    // Add Markers for Weather Stations (excluding removed stations)
+    Object.entries(STATION_COORDS)
+      .filter(([name]) => !REMOVED_STATIONS.has(name))
+      .forEach(([name, coords]) => {
+        const color = STATION_CLIMATE_COLORS[name] || '#10b981';
+        const microInfo = CITY_MICROCLIMATE_EXPLANATION[name];
 
-      const popupHtml = `
-        <div style="color: #0f172a; padding: 8px; font-family: system-ui, sans-serif; max-width: 220px;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-            <h4 style="margin: 0; font-weight: 800; font-size: 14px; color: #0f172a;">${name}</h4>
-            <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${color}; border: 1px solid #fff;"></span>
-          </div>
-          <div style="font-size: 11px; font-weight: 700; color: ${color}; margin-bottom: 4px;">
-            ${getClimateLabel(color)}
-          </div>
-          ${microInfo ? `
-            <div style="background-color: #f1f5f9; border-left: 3px solid ${color}; padding: 4px 6px; border-radius: 4px; margin-top: 6px; font-size: 10px; color: #334155; line-height: 1.3;">
-              <strong>Microclimate:</strong> ${microInfo.note}
+        const popupHtml = `
+          <div style="color: #0f172a; padding: 8px; font-family: system-ui, sans-serif; max-width: 220px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <h4 style="margin: 0; font-weight: 800; font-size: 14px; color: #0f172a;">${name}</h4>
+              <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${color}; border: 1px solid #fff;"></span>
             </div>
-          ` : ''}
-        </div>
-      `;
+            <div style="font-size: 11px; font-weight: 700; color: ${color}; margin-bottom: 4px;">
+              ${getClimateLabel(color)}
+            </div>
+            ${microInfo ? `
+              <div style="background-color: #f1f5f9; border-left: 3px solid ${color}; padding: 4px 6px; border-radius: 4px; margin-top: 6px; font-size: 10px; color: #334155; line-height: 1.3;">
+                <strong>Microclimate:</strong> ${microInfo.note}
+              </div>
+            ` : ''}
+          </div>
+        `;
 
-      const popup = new maptilersdk.Popup({ offset: 25, closeButton: false }).setHTML(popupHtml);
+        const popup = new maptilersdk.Popup({ offset: 25, closeButton: false }).setHTML(popupHtml);
 
-      const marker = new maptilersdk.Marker({
-        color: color
-      })
-        .setLngLat(coords)
-        .setPopup(popup)
-        .addTo(map);
+        const marker = new maptilersdk.Marker({
+          color: color
+        })
+          .setLngLat(coords)
+          .setPopup(popup)
+          .addTo(map);
 
-      const pinSvg = marker.getElement().querySelector('svg path');
-      if (pinSvg) {
-        if (name === selectedLocation) {
-          pinSvg.setAttribute('stroke', '#ffffff');
-          pinSvg.setAttribute('stroke-width', '3.5');
-        } else {
-          pinSvg.setAttribute('stroke', '#090d16');
-          pinSvg.setAttribute('stroke-width', '1.5');
+        const pinSvg = marker.getElement().querySelector('svg path');
+        if (pinSvg) {
+          if (name === selectedLocation) {
+            pinSvg.setAttribute('stroke', '#ffffff');
+            pinSvg.setAttribute('stroke-width', '3.5');
+          } else {
+            pinSvg.setAttribute('stroke', '#090d16');
+            pinSvg.setAttribute('stroke-width', '1.5');
+          }
         }
-      }
 
-      marker.getElement().addEventListener('click', (e) => {
-        e.stopPropagation();
-        setDismissCard(false);
-        setSelectedLocation(name);
+        marker.getElement().addEventListener('click', (e) => {
+          e.stopPropagation();
+          setDismissCard(false);
+          setSelectedLocation(name);
+        });
+
+        markersRef.current[name] = marker;
       });
-
-      markersRef.current[name] = marker;
-    });
 
     map.on("load", async () => {
       try {
@@ -424,15 +433,17 @@ export default function PakistanMap({ selectedLocation, setSelectedLocation }: P
         });
 
         // 3. Add Station Microclimate Glow Aura Layer
-        const stationPointFeatures = Object.entries(STATION_COORDS).map(([name, coords]) => ({
-          type: 'Feature',
-          geometry: { type: 'Point', coordinates: coords },
-          properties: {
-            name,
-            color: STATION_CLIMATE_COLORS[name] || '#10b981',
-            isMicroclimate: !!CITY_MICROCLIMATE_EXPLANATION[name],
-          }
-        }));
+        const stationPointFeatures = Object.entries(STATION_COORDS)
+          .filter(([name]) => !REMOVED_STATIONS.has(name))
+          .map(([name, coords]) => ({
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: coords },
+            properties: {
+              name,
+              color: STATION_CLIMATE_COLORS[name] || '#10b981',
+              isMicroclimate: !!CITY_MICROCLIMATE_EXPLANATION[name],
+            }
+          }));
 
         map.addSource("station-glow-source", {
           type: "geojson",

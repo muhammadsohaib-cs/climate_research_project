@@ -3,7 +3,12 @@ import json
 import numpy as np
 import pandas as pd
 
-REMOVED_STATIONS = set()
+REMOVED_STATIONS = {
+    'Chitral', 'Mohin Jodaro', 'Badin', 'Ormara', 'Lasbella',
+    'Risalpur', 'Lahore', 'Kohat', 'Multan', 'Peshawar',
+    'Khuzdar', 'Saidu Sharif', 'Barkhan', 'Jiwani', 'Kalat',
+    'Rohri', 'Dir', 'Cherat', 'Passni', 'Pasni', 'Astore', 'Sibbi'
+}
 
 def create_json():
     print("=== Exporting ML Pipeline v2.1 Dataset to JSON (1961 - 2037) ===")

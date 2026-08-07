@@ -48,7 +48,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const REMOVED_STATIONS = new Set<string>([]);
+const REMOVED_STATIONS = new Set<string>([
+  'Chitral', 'Mohin Jodaro', 'Badin', 'Ormara', 'Lasbella',
+  'Risalpur', 'Lahore', 'Kohat', 'Multan', 'Peshawar',
+  'Khuzdar', 'Saidu Sharif', 'Barkhan', 'Jiwani', 'Kalat',
+  'Rohri', 'Dir', 'Cherat', 'Passni', 'Pasni', 'Astore', 'Sibbi'
+]);
 
 export default function Dashboard() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

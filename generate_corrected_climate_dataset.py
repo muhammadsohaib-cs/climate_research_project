@@ -3,7 +3,12 @@ import numpy as np
 import os
 from scipy.stats import linregress
 
-REMOVED_STATIONS = set()
+REMOVED_STATIONS = {
+    'Chitral', 'Mohin Jodaro', 'Badin', 'Ormara', 'Lasbella',
+    'Risalpur', 'Lahore', 'Kohat', 'Multan', 'Peshawar',
+    'Khuzdar', 'Saidu Sharif', 'Barkhan', 'Jiwani', 'Kalat',
+    'Rohri', 'Dir', 'Cherat', 'Passni', 'Pasni', 'Astore', 'Sibbi'
+}
 
 def build_corrected_dataset(excel_path='journal.pone.0271626.s001.xlsx'):
     print(f"Loading raw dataset from {excel_path}...")
@@ -16,26 +21,25 @@ def build_corrected_dataset(excel_path='journal.pone.0271626.s001.xlsx'):
         df_raw = pd.read_excel(xl, sheet_name=sheet, header=None, skiprows=2)
         header_row = pd.read_excel(xl, sheet_name=sheet, header=None, nrows=2).iloc[1].tolist()
         
-        cities = []
+        sheet_cities = []
         for col in header_row[3:]:
             col_str = str(col).strip()
-            if pd.isna(col) or col_str == 'Average' or col_str == 'nan':
+            if pd.isna(col) or col_str.lower() in ['average', 'sum', 'nan']:
                 break
-            if col_str not in REMOVED_STATIONS:
-                cities.append(col_str)
+            sheet_cities.append(col_str)
             
         col_names = ['Year', 'Month', 'Day']
-        for city in cities:
+        for city in sheet_cities:
             col_names.append(f'MaxTemp_{city}')
         col_names.append('MaxTemp_Average')
         col_names.append('Empty_1')
         
-        for city in cities:
+        for city in sheet_cities:
             col_names.append(f'MinTemp_{city}')
         col_names.append('MinTemp_Average')
         col_names.append('Empty_2')
         
-        for city in cities:
+        for city in sheet_cities:
             col_names.append(f'Precip_{city}')
         col_names.append('Precip_Sum')
         
@@ -51,8 +55,8 @@ def build_corrected_dataset(excel_path='journal.pone.0271626.s001.xlsx'):
         cols_to_drop = [c for c in ['Empty_1', 'Empty_2', 'MaxTemp_Average', 'MinTemp_Average', 'Precip_Sum'] if c in df_raw.columns]
         df_raw.drop(columns=cols_to_drop, inplace=True)
         
-        sentinel_values = ['***', '----', -999, -999.0, 999, 999.0, -99, -99.0, -9999, -9999.0]
-        df_raw.replace(sentinel_values, np.nan, inplace=True)
+        sentinel_values = ['***', '----', -999, -999.0, 999, 999.0, -99, -99.0, -9999, -9999.0, '-999', '-9999', '-99', '999', '9999']
+        df_raw = df_raw.replace(sentinel_values, np.nan)
         
         df_raw.dropna(subset=['Year', 'Month', 'Day'], inplace=True)
         df_raw['Year'] = pd.to_numeric(df_raw['Year'], errors='coerce')
@@ -71,7 +75,7 @@ def build_corrected_dataset(excel_path='journal.pone.0271626.s001.xlsx'):
         for col in df_raw.columns:
             if col not in ['Year', 'Month', 'Day']:
                 df_raw[col] = pd.to_numeric(df_raw[col], errors='coerce')
-                df_raw[col].replace(sentinel_values, np.nan, inplace=True)
+                df_raw[col] = df_raw[col].replace(sentinel_values, np.nan)
                 if col.startswith('MaxTemp_'):
                     # Physical meteorology bounds for Max Temp in Pakistan
                     df_raw.loc[(df_raw[col] < -30) | (df_raw[col] > 56), col] = np.nan
@@ -90,8 +94,11 @@ def build_corrected_dataset(excel_path='journal.pone.0271626.s001.xlsx'):
                     m_std = month_grp.transform('std')
                     z_mask = (m_std > 0) & (((df_raw[col] - m_mean).abs() / m_std) > 3.8)
                     df_raw.loc[z_mask, col] = np.nan
+                elif col.startswith('Precip_'):
+                    # Precipitation bounds checking (e.g. negative values or sentinel codes)
+                    df_raw.loc[df_raw[col] < 0, col] = np.nan
                     
-        valid_cities = [c for c in cities if f'MaxTemp_{c}' in df_raw.columns and c not in REMOVED_STATIONS]
+        valid_cities = [c for c in sheet_cities if f'MaxTemp_{c}' in df_raw.columns and c not in REMOVED_STATIONS]
         cols_to_keep = ['Year', 'Month', 'Day']
         for c in valid_cities:
             cols_to_keep.extend([f'MaxTemp_{c}', f'MinTemp_{c}', f'Precip_{c}'])
@@ -114,9 +121,25 @@ def build_corrected_dataset(excel_path='journal.pone.0271626.s001.xlsx'):
         if col not in ['Year', 'Month']:
             df_combined[col] = df_combined[col].interpolate(method='time', limit=14)
             
-    # Calculate Multi-Metric Annual Aggregates
-    full_years = range(1961, 2018)
-    annual_dates = pd.date_range(start='1961-12-31', end='2017-12-31', freq='YE')
+    # Step 1: Check for incomplete years. Group raw data by year and count months/days present.
+    all_years = sorted(df_combined['Year'].unique())
+    valid_years = []
+    for yr in all_years:
+        yr_df = df_combined[df_combined['Year'] == yr]
+        months_present = yr_df['Month'].nunique()
+        days_present = len(yr_df)
+        
+        # If the final year in the dataset does not have a complete set of records (e.g. less than 12 full months), drop that entire year
+        if yr == all_years[-1] and months_present < 12:
+            print(f"Step 1: Dropping incomplete final year {yr} (only {months_present} months present, {days_present} days)")
+            continue
+        valid_years.append(yr)
+
+    full_years = valid_years
+    min_yr = min(full_years)
+    max_yr = max(full_years)
+    print(f"Calculating annual aggregates for complete years: {min_yr} to {max_yr} ({len(full_years)} years)")
+    annual_dates = [pd.Timestamp(f'{y}-12-31') for y in full_years]
     
     annual_df = pd.DataFrame(index=annual_dates)
     annual_df.index.name = 'Date'
@@ -143,9 +166,11 @@ def build_corrected_dataset(excel_path='journal.pone.0271626.s001.xlsx'):
         s_max_mean = y_max_mean['mean'].reindex(full_years).astype(float)
         annual_df[c_max] = s_max_mean.interpolate(method='linear').ffill().bfill().values
         
-        # 2. Annual Peak Extreme Max Temp (Tx_x)
+        # 2. Annual Peak Extreme Max Temp (Tx_x) - ensure Peak >= Annual Mean Max
         y_peak = df_combined.groupby('Year')[c_max].max().reindex(full_years).astype(float)
-        annual_df[f'PeakMaxTemp_{city}'] = y_peak.interpolate(method='linear').ffill().bfill().values
+        s_peak = np.maximum(y_peak.values, s_max_mean.values)
+        s_peak_series = pd.Series(s_peak, index=full_years)
+        annual_df[f'PeakMaxTemp_{city}'] = s_peak_series.interpolate(method='linear').ffill().bfill().values
         
         # 3. Summer Season Mean Max Temp (May-July)
         summer_df = df_combined[df_combined['Month'].isin([5, 6, 7])]
@@ -160,17 +185,19 @@ def build_corrected_dataset(excel_path='journal.pone.0271626.s001.xlsx'):
         s_min_mean = y_min_mean['mean'].reindex(full_years).astype(float).interpolate(method='linear').ffill().bfill()
         annual_df[c_min] = s_min_mean.values
         
-        # 5. Annual Total Precipitation
+        # 5. Annual Total Precipitation (Strict Null handling - ignore NaNs instead of zero-filling)
         if c_precip in df_combined.columns:
-            precip_y = df_combined[c_precip].resample('YE').sum()
-            precip_y = precip_y[precip_y.index.year <= 2017]
+            precip_y = df_combined[c_precip].resample('YE').sum(min_count=1)
+            precip_y = precip_y[precip_y.index.year.isin(full_years)]
             annual_df[c_precip] = precip_y.values
             
-    # Calculate National Averages
-    annual_df['National_MaxTemp'] = annual_df[max_cols].mean(axis=1)
-    annual_df['National_MinTemp'] = annual_df[min_cols].mean(axis=1)
+    # Calculate National Averages (ignoring NaNs explicitly)
+    annual_df['National_MaxTemp'] = annual_df[max_cols].mean(axis=1, skipna=True)
+    annual_df['National_PeakMaxTemp'] = annual_df[[c for c in annual_df.columns if c.startswith('PeakMaxTemp_')]].mean(axis=1, skipna=True)
+    annual_df['National_SummerMaxTemp'] = annual_df[[c for c in annual_df.columns if c.startswith('SummerMaxTemp_')]].mean(axis=1, skipna=True)
+    annual_df['National_MinTemp'] = annual_df[min_cols].mean(axis=1, skipna=True)
     if precip_cols:
-        annual_df['National_Precip'] = annual_df[[c for c in precip_cols if c in annual_df.columns]].mean(axis=1)
+        annual_df['National_Precip'] = annual_df[[c for c in precip_cols if c in annual_df.columns]].mean(axis=1, skipna=True)
         
     print("\nSanity Check - Station Peak & Mean Temperatures:")
     for check_city in ['Sibbi', 'Nokkundi', 'Islamabad', 'Karachi']:
@@ -179,9 +206,10 @@ def build_corrected_dataset(excel_path='journal.pone.0271626.s001.xlsx'):
             peak_v = annual_df[f'PeakMaxTemp_{check_city}'].mean()
             summer_v = annual_df[f'SummerMaxTemp_{check_city}'].mean()
             slope = linregress(range(len(annual_df)), annual_df[f'MaxTemp_{check_city}']).slope * 10
-            print(f"  {check_city:10s} | 57-yr Mean Max: {mean_v:.2f}°C | Summer Mean: {summer_v:.2f}°C | Peak Extreme: {peak_v:.2f}°C | Decadal Trend: {slope:+.3f}°C/dec")
+            print(f"  {check_city:10s} | {len(annual_df)}-yr Mean Max: {mean_v:.2f}°C | Summer Mean: {summer_v:.2f}°C | Peak Extreme: {peak_v:.2f}°C | Decadal Trend: {slope:+.3f}°C/dec")
             
-    print("\nSaving corrected annual dataset to annual_aggregates.csv...")
+    print("\nSaving corrected annual dataset to annual_aggregates_corrected.csv and annual_aggregates.csv...")
+    annual_df.to_csv('annual_aggregates_corrected.csv')
     annual_df.to_csv('annual_aggregates.csv')
     try:
         annual_df.to_csv('annual_aggregates_corrected.csv')
