@@ -40,7 +40,8 @@ def create_json():
 
         # Historical Trend Data (1961 - 2017)
         loc_historical = []
-        for _, row in df.iterrows():
+        hist_df = df[df['Year'] <= 2017]
+        for _, row in hist_df.iterrows():
             year = int(row['Year'])
             max_temp = round(row[col_max], 2) if pd.notna(row[col_max]) else None
             peak_max_temp = round(row[col_peak], 2) if col_peak in df.columns and pd.notna(row[col_peak]) else None

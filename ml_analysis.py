@@ -4,7 +4,6 @@ import json
 import numpy as np
 import pandas as pd
 from scipy.stats import linregress
-from sklearn.linear_model import Ridge, LinearRegression
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.metrics import mean_squared_error, mean_absolute_error
@@ -14,6 +13,12 @@ try:
     HAS_XGBOOST = True
 except ImportError:
     HAS_XGBOOST = False
+
+try:
+    import lightgbm as lgb
+    HAS_LIGHTGBM = True
+except ImportError:
+    HAS_LIGHTGBM = False
 
 try:
     import matplotlib
@@ -41,52 +46,52 @@ def get_exogenous_features(years):
     
     return np.column_stack([co2_scaled, aod_scaled, oni_scaled])
 
-def build_advanced_features(years, target_residual, precip_series, exog_features, lag_k=5, p_mean=None, p_std=None):
+def build_differenced_features(years, delta_series, temp_series, precip_series, exog_features, lag_k=3, p_mean=None, p_std=None):
     X, y = [], []
     if p_mean is None:
         p_mean = np.mean(precip_series)
     if p_std is None:
         p_std = np.std(precip_series) if np.std(precip_series) > 0 else 1.0
         
-    for i in range(lag_k, len(years)):
-        target_lags = target_residual[i-lag_k:i][::-1]
-        precip_lags = (precip_series[i-lag_k:i] - p_mean) / p_std
-        precip_lags = precip_lags[::-1]
+    for i in range(lag_k, len(delta_series)):
+        delta_lags = delta_series[i-lag_k:i][::-1]
+        temp_lags = temp_series[i-lag_k:i][::-1]
+        precip_lags = ((precip_series[i-lag_k:i] - p_mean) / p_std)[::-1]
         
         ex = exog_features[i]
         yr = years[i]
         yr_norm = (yr - 1960.0) / 60.0
-        sin_yr = np.sin(2 * np.pi * yr / 11.0)
-        cos_yr = np.cos(2 * np.pi * yr / 11.0)
         
-        # Rolling Statistics over past data relative to current point (No Data Leakage)
-        roll_mean_3 = np.mean(target_lags[:3])
-        roll_mean_5 = np.mean(target_lags[:5])
-        roll_var_3 = np.var(target_lags[:3])
-        roll_var_5 = np.var(target_lags[:5])
+        # Multi-Year Harmonic Oscillations (3, 5, 7 year climate frequencies)
+        sin_3 = np.sin(2 * np.pi * yr / 3.0)
+        cos_3 = np.cos(2 * np.pi * yr / 3.0)
+        sin_5 = np.sin(2 * np.pi * yr / 5.0)
+        cos_5 = np.cos(2 * np.pi * yr / 5.0)
+        sin_7 = np.sin(2 * np.pi * yr / 7.0)
+        cos_7 = np.cos(2 * np.pi * yr / 7.0)
         
-        # Expanding max/min windows over past data relative to current point
-        past_window = target_residual[:i]
-        exp_max = np.max(past_window) if len(past_window) > 0 else target_lags[0]
-        exp_min = np.min(past_window) if len(past_window) > 0 else target_lags[0]
-        
-        target_diff_1 = target_lags[0] - target_lags[1] if len(target_lags) > 1 else 0.0
-        co2_oni_interaction = ex[0] * ex[2]
+        # Volatility Signals: Rolling Standard Deviations over 3-year & 5-year windows
+        roll_std_3 = np.std(delta_lags[:3]) if len(delta_lags) >= 3 else np.std(delta_lags)
+        roll_std_5 = np.std(delta_lags[:5]) if len(delta_lags) >= 5 else np.std(delta_lags)
+        roll_mean_3 = np.mean(delta_lags[:3]) if len(delta_lags) >= 3 else np.mean(delta_lags)
+        roll_mean_5 = np.mean(delta_lags[:5]) if len(delta_lags) >= 5 else np.mean(delta_lags)
         
         feat = np.concatenate([
-            target_lags, 
-            precip_lags, 
-            [roll_mean_3, roll_mean_5, roll_var_3, roll_var_5, exp_max, exp_min, target_diff_1, co2_oni_interaction, yr_norm, sin_yr, cos_yr],
+            delta_lags,
+            temp_lags,
+            precip_lags,
+            [roll_std_3, roll_std_5, roll_mean_3, roll_mean_5],
+            [sin_3, cos_3, sin_5, cos_5, sin_7, cos_7, yr_norm],
             ex
         ])
         X.append(feat)
-        y.append(target_residual[i])
+        y.append(delta_series[i])
         
     return np.array(X), np.array(y)
 
 def run_tabular_ml_pipeline():
-    print("=== Starting Optimized Detrended Ensemble Climate Forecasting Engine ===")
-    print(f"XGBoost available: {HAS_XGBOOST} | Matplotlib available: {HAS_MATPLOTLIB}")
+    print("=== Starting Differenced Target ML Climate Forecasting Engine (Dynamic Heterogeneity) ===")
+    print(f"XGBoost available: {HAS_XGBOOST} | LightGBM available: {HAS_LIGHTGBM} | Matplotlib available: {HAS_MATPLOTLIB}")
     
     csv_path = 'annual_aggregates_corrected.csv'
     if not os.path.exists(csv_path):
@@ -152,216 +157,220 @@ def run_tabular_ml_pipeline():
             'summer': summer_series
         }
 
-        lag_k = 5
+        lag_k = 3
 
         for target_name, target_y in target_dict.items():
-            # 1. Fit Baseline Linear Trend Model on full history
-            trend_model = Ridge(alpha=10.0)
-            X_trend_hist = np.column_stack([historical_years, exog_hist[:, 0]])
-            trend_model.fit(X_trend_hist, target_y)
-            trend_hist_pred = trend_model.predict(X_trend_hist)
-            y_residual = target_y - trend_hist_pred
+            # 1. Compute Differenced Target Delta_T = Temp(t) - Temp(t-1)
+            delta_y = np.diff(target_y, prepend=target_y[0])
+            years_diff = historical_years
 
             # 2. Strict TimeSeriesSplit Cross-Validation
             tscv = TimeSeriesSplit(n_splits=5)
-            val_metrics = {'linear': {'rmse': [], 'mae': []}, 'rf': {'rmse': [], 'mae': []}, 'xgb': {'rmse': [], 'mae': []}, 'ensemble': {'rmse': [], 'mae': []}}
+            val_metrics = {'xgb': {'rmse': [], 'mae': []}, 'lgb': {'rmse': [], 'mae': []}, 'rf': {'rmse': [], 'mae': []}, 'ensemble': {'rmse': [], 'mae': []}}
 
-            for train_index, test_index in tscv.split(historical_years):
+            for train_index, test_index in tscv.split(years_diff):
                 if len(train_index) < lag_k + 5:
                     continue
                 
-                years_tr = historical_years[train_index]
-                target_tr_raw = target_y[train_index]
+                years_tr = years_diff[train_index]
+                delta_tr = delta_y[train_index]
+                temp_tr = target_y[train_index]
                 exog_tr = exog_hist[train_index]
                 precip_tr = p_series[train_index]
 
-                # Fit linear trend model strictly on fold training data
-                X_tr_trend = np.column_stack([years_tr, exog_tr[:, 0]])
-                t_model_fold = Ridge(alpha=10.0)
-                t_model_fold.fit(X_tr_trend, target_tr_raw)
-                tr_trend_pred = t_model_fold.predict(X_tr_trend)
-                tr_residual = target_tr_raw - tr_trend_pred
-
-                # Fold dynamic scaling parameters
                 p_mean_val = np.mean(precip_tr)
                 p_std_val = np.std(precip_tr) if np.std(precip_tr) > 0 else 1.0
 
-                # Build advanced features strictly on training fold
-                X_tr_feat, y_tr_res = build_advanced_features(
-                    years_tr, tr_residual, precip_tr, exog_tr,
+                X_tr_feat, y_tr_delta = build_differenced_features(
+                    years_tr, delta_tr, temp_tr, precip_tr, exog_tr,
                     lag_k=lag_k, p_mean=p_mean_val, p_std=p_std_val
                 )
 
                 if len(X_tr_feat) < 3:
                     continue
 
-                # Train Fold Models on Stationary Residuals
-                m_linear = Ridge(alpha=5.0).fit(X_tr_feat, y_tr_res)
-                m_rf = RandomForestRegressor(n_estimators=50, max_depth=5, min_samples_split=4, random_state=42).fit(X_tr_feat, y_tr_res)
+                # Train Models on Differenced Targets Delta_T
                 if HAS_XGBOOST:
-                    m_xgb = xgb.XGBRegressor(n_estimators=50, max_depth=3, learning_rate=0.05, random_state=42).fit(X_tr_feat, y_tr_res)
+                    m_xgb = xgb.XGBRegressor(n_estimators=60, max_depth=3, learning_rate=0.05, random_state=42).fit(X_tr_feat, y_tr_delta)
                 else:
-                    m_xgb = GradientBoostingRegressor(n_estimators=50, max_depth=3, learning_rate=0.05, random_state=42).fit(X_tr_feat, y_tr_res)
+                    m_xgb = GradientBoostingRegressor(n_estimators=60, max_depth=3, learning_rate=0.05, random_state=42).fit(X_tr_feat, y_tr_delta)
 
-                # Predict on Validation Fold Step-by-Step
-                val_preds_linear, val_preds_rf, val_preds_xgb, val_preds_ens = [], [], [], []
-                
-                res_tracker = list(tr_residual)
+                if HAS_LIGHTGBM:
+                    m_lgb = lgb.LGBMRegressor(n_estimators=60, max_depth=3, learning_rate=0.05, random_state=42, verbose=-1).fit(X_tr_feat, y_tr_delta)
+                else:
+                    m_lgb = GradientBoostingRegressor(n_estimators=60, max_depth=3, learning_rate=0.05, random_state=42).fit(X_tr_feat, y_tr_delta)
+
+                m_rf = RandomForestRegressor(n_estimators=60, max_depth=4, random_state=42).fit(X_tr_feat, y_tr_delta)
+
+                # Validate Autoregressively on Test Fold
+                delta_tracker = list(delta_tr)
+                temp_tracker = list(temp_tr)
                 precip_tracker = list(precip_tr)
-                
+
+                val_reconstructed_xgb, val_reconstructed_lgb, val_reconstructed_rf, val_reconstructed_ens = [], [], [], []
+
                 for idx_val in test_index:
-                    val_yr = historical_years[idx_val]
+                    val_yr = years_diff[idx_val]
                     val_exog = exog_hist[idx_val]
-                    
-                    val_trend_point = t_model_fold.predict([[val_yr, val_exog[0]]])[0]
-                    
-                    target_lags_step = np.array(res_tracker[-lag_k:])[::-1]
+
+                    delta_lags_step = np.array(delta_tracker[-lag_k:])[::-1]
+                    temp_lags_step = np.array(temp_tracker[-lag_k:])[::-1]
                     precip_lags_step = ((np.array(precip_tracker[-lag_k:]) - p_mean_val) / p_std_val)[::-1]
-                    
+
                     yr_norm = (val_yr - 1960.0) / 60.0
-                    sin_yr = np.sin(2 * np.pi * val_yr / 11.0)
-                    cos_yr = np.cos(2 * np.pi * val_yr / 11.0)
-                    
-                    roll_mean_3 = np.mean(target_lags_step[:3])
-                    roll_mean_5 = np.mean(target_lags_step[:5])
-                    roll_var_3 = np.var(target_lags_step[:3])
-                    roll_var_5 = np.var(target_lags_step[:5])
-                    
-                    exp_max = np.max(res_tracker)
-                    exp_min = np.min(res_tracker)
-                    
-                    target_diff_1 = target_lags_step[0] - target_lags_step[1] if len(target_lags_step) > 1 else 0.0
-                    co2_oni_interaction = val_exog[0] * val_exog[2]
-                    
+                    sin_3 = np.sin(2 * np.pi * val_yr / 3.0)
+                    cos_3 = np.cos(2 * np.pi * val_yr / 3.0)
+                    sin_5 = np.sin(2 * np.pi * val_yr / 5.0)
+                    cos_5 = np.cos(2 * np.pi * val_yr / 5.0)
+                    sin_7 = np.sin(2 * np.pi * val_yr / 7.0)
+                    cos_7 = np.cos(2 * np.pi * val_yr / 7.0)
+
+                    roll_std_3 = np.std(delta_lags_step[:3]) if len(delta_lags_step) >= 3 else np.std(delta_lags_step)
+                    roll_std_5 = np.std(delta_lags_step[:5]) if len(delta_lags_step) >= 5 else np.std(delta_lags_step)
+                    roll_mean_3 = np.mean(delta_lags_step[:3]) if len(delta_lags_step) >= 3 else np.mean(delta_lags_step)
+                    roll_mean_5 = np.mean(delta_lags_step[:5]) if len(delta_lags_step) >= 5 else np.mean(delta_lags_step)
+
                     val_feat = np.concatenate([
-                        target_lags_step, 
-                        precip_lags_step, 
-                        [roll_mean_3, roll_mean_5, roll_var_3, roll_var_5, exp_max, exp_min, target_diff_1, co2_oni_interaction, yr_norm, sin_yr, cos_yr],
+                        delta_lags_step,
+                        temp_lags_step,
+                        precip_lags_step,
+                        [roll_std_3, roll_std_5, roll_mean_3, roll_mean_5],
+                        [sin_3, cos_3, sin_5, cos_5, sin_7, cos_7, yr_norm],
                         val_exog
                     ]).reshape(1, -1)
 
-                    res_lin = float(m_linear.predict(val_feat)[0])
-                    res_rf = float(m_rf.predict(val_feat)[0])
-                    res_xgb = float(m_xgb.predict(val_feat)[0])
-                    res_ens = float(0.4 * res_lin + 0.3 * res_rf + 0.3 * res_xgb)
+                    d_xgb = float(m_xgb.predict(val_feat)[0])
+                    d_lgb = float(m_lgb.predict(val_feat)[0])
+                    d_rf = float(m_rf.predict(val_feat)[0])
+                    d_ens = float(0.4 * d_xgb + 0.4 * d_lgb + 0.2 * d_rf)
 
-                    val_preds_linear.append(val_trend_point + res_lin)
-                    val_preds_rf.append(val_trend_point + res_rf)
-                    val_preds_xgb.append(val_trend_point + res_xgb)
-                    val_preds_ens.append(val_trend_point + res_ens)
+                    last_temp = temp_tracker[-1]
+                    val_reconstructed_xgb.append(last_temp + d_xgb)
+                    val_reconstructed_lgb.append(last_temp + d_lgb)
+                    val_reconstructed_rf.append(last_temp + d_rf)
+                    val_reconstructed_ens.append(last_temp + d_ens)
 
-                    res_tracker.append(res_ens)
+                    delta_tracker.append(d_ens)
+                    temp_tracker.append(last_temp + d_ens)
                     precip_tracker.append(p_series[idx_val])
 
                 actual_val = target_y[test_index]
-                val_metrics['linear']['rmse'].append(np.sqrt(mean_squared_error(actual_val, val_preds_linear)))
-                val_metrics['linear']['mae'].append(mean_absolute_error(actual_val, val_preds_linear))
+                val_metrics['xgb']['rmse'].append(np.sqrt(mean_squared_error(actual_val, val_reconstructed_xgb)))
+                val_metrics['xgb']['mae'].append(mean_absolute_error(actual_val, val_reconstructed_xgb))
 
-                val_metrics['rf']['rmse'].append(np.sqrt(mean_squared_error(actual_val, val_preds_rf)))
-                val_metrics['rf']['mae'].append(mean_absolute_error(actual_val, val_preds_rf))
+                val_metrics['lgb']['rmse'].append(np.sqrt(mean_squared_error(actual_val, val_reconstructed_lgb)))
+                val_metrics['lgb']['mae'].append(mean_absolute_error(actual_val, val_reconstructed_lgb))
 
-                val_metrics['xgb']['rmse'].append(np.sqrt(mean_squared_error(actual_val, val_preds_xgb)))
-                val_metrics['xgb']['mae'].append(mean_absolute_error(actual_val, val_preds_xgb))
+                val_metrics['rf']['rmse'].append(np.sqrt(mean_squared_error(actual_val, val_reconstructed_rf)))
+                val_metrics['rf']['mae'].append(mean_absolute_error(actual_val, val_reconstructed_rf))
 
-                val_metrics['ensemble']['rmse'].append(np.sqrt(mean_squared_error(actual_val, val_preds_ens)))
-                val_metrics['ensemble']['mae'].append(mean_absolute_error(actual_val, val_preds_ens))
+                val_metrics['ensemble']['rmse'].append(np.sqrt(mean_squared_error(actual_val, val_reconstructed_ens)))
+                val_metrics['ensemble']['mae'].append(mean_absolute_error(actual_val, val_reconstructed_ens))
 
-            # Choose model with lowest average RMSE across CV folds
+            # Select Best Model based on CV RMSE
             avg_rmse_map = {m: float(np.mean(val_metrics[m]['rmse'])) for m in val_metrics if len(val_metrics[m]['rmse']) > 0}
             avg_mae_map = {m: float(np.mean(val_metrics[m]['mae'])) for m in val_metrics if len(val_metrics[m]['mae']) > 0}
-            
             best_m = min(avg_rmse_map, key=avg_rmse_map.get) if avg_rmse_map else 'ensemble'
-            
+
             loc_results['selected_models'][target_name] = best_m.upper()
             loc_results['cv_rmse'][target_name] = round(avg_rmse_map.get(best_m, 0.5), 3)
             loc_results['cv_mae'][target_name] = round(avg_mae_map.get(best_m, 0.4), 3)
 
-            # 3. Retrain Full Models on All Historical Residuals
+            # 3. Retrain Full Models on Historical Differenced Series
             p_mean_full = np.mean(p_series)
             p_std_full = np.std(p_series) if np.std(p_series) > 0 else 1.0
 
-            X_res_full, Y_res_full = build_advanced_features(
-                historical_years, y_residual, p_series, exog_hist,
+            X_full_feat, Y_full_delta = build_differenced_features(
+                historical_years, delta_y, target_y, p_series, exog_hist,
                 lag_k=lag_k, p_mean=p_mean_full, p_std=p_std_full
             )
 
-            m_lin_full = Ridge(alpha=5.0).fit(X_res_full, Y_res_full)
-            m_rf_full = RandomForestRegressor(n_estimators=50, max_depth=5, min_samples_split=4, random_state=42).fit(X_res_full, Y_res_full)
             if HAS_XGBOOST:
-                m_xgb_full = xgb.XGBRegressor(n_estimators=50, max_depth=3, learning_rate=0.05, random_state=42).fit(X_res_full, Y_res_full)
+                m_xgb_full = xgb.XGBRegressor(n_estimators=60, max_depth=3, learning_rate=0.05, random_state=42).fit(X_full_feat, Y_full_delta)
             else:
-                m_xgb_full = GradientBoostingRegressor(n_estimators=50, max_depth=3, learning_rate=0.05, random_state=42).fit(X_res_full, Y_res_full)
+                m_xgb_full = GradientBoostingRegressor(n_estimators=60, max_depth=3, learning_rate=0.05, random_state=42).fit(X_full_feat, Y_full_delta)
 
-            # Quantile Regression Models for 95% Prediction Intervals (5th and 95th percentiles)
-            model_lower = GradientBoostingRegressor(
-                loss='quantile', alpha=0.05, n_estimators=60, max_depth=3, learning_rate=0.05, random_state=42
-            ).fit(X_res_full, Y_res_full)
-            
-            model_upper = GradientBoostingRegressor(
-                loss='quantile', alpha=0.95, n_estimators=60, max_depth=3, learning_rate=0.05, random_state=42
-            ).fit(X_res_full, Y_res_full)
+            if HAS_LIGHTGBM:
+                m_lgb_full = lgb.LGBMRegressor(n_estimators=60, max_depth=3, learning_rate=0.05, random_state=42, verbose=-1).fit(X_full_feat, Y_full_delta)
+            else:
+                m_lgb_full = GradientBoostingRegressor(n_estimators=60, max_depth=3, learning_rate=0.05, random_state=42).fit(X_full_feat, Y_full_delta)
 
-            # 4. Future Autoregressive Rollout (2018 - 2037)
-            X_trend_future = np.column_stack([future_years, exog_future[:, 0]])
-            trend_future_pred = trend_model.predict(X_trend_future)
+            m_rf_full = RandomForestRegressor(n_estimators=60, max_depth=4, random_state=42).fit(X_full_feat, Y_full_delta)
 
-            forecast_mean, forecast_lower, forecast_upper = [], [], []
-            res_hist_tracker = list(y_residual)
-            p_hist_tracker = list(p_series)
+            # Compute Historical Predictions for Residual Distribution
+            hist_d_preds = 0.4 * m_xgb_full.predict(X_full_feat) + 0.4 * m_lgb_full.predict(X_full_feat) + 0.2 * m_rf_full.predict(X_full_feat)
+            residuals_dist = Y_full_delta - hist_d_preds
 
-            for idx, year in enumerate(future_years):
-                target_lags_step = np.array(res_hist_tracker[-lag_k:])[::-1]
-                precip_lags_step = ((np.array(p_hist_tracker[-lag_k:]) - p_mean_full) / p_std_full)[::-1]
-                
-                exog_step = exog_future[idx]
-                yr_norm = (year - 1960.0) / 60.0
-                sin_yr = np.sin(2 * np.pi * year / 11.0)
-                cos_yr = np.cos(2 * np.pi * year / 11.0)
+            # 4. Autoregressive Rollout & Monte Carlo Simulations (2018 - 2037)
+            all_sim_paths = []
+            num_simulations = 200
 
-                roll_mean_3 = np.mean(target_lags_step[:3])
-                roll_mean_5 = np.mean(target_lags_step[:5])
-                roll_var_3 = np.var(target_lags_step[:3])
-                roll_var_5 = np.var(target_lags_step[:5])
+            for sim in range(num_simulations):
+                sim_delta_tracker = list(delta_y)
+                sim_temp_tracker = list(target_y)
+                sim_precip_tracker = list(p_series)
+                sim_temp_path = []
 
-                exp_max = np.max(res_hist_tracker)
-                exp_min = np.min(res_hist_tracker)
+                # Add small simulation seed noise
+                rng = np.random.RandomState(42 + sim)
 
-                target_diff_1 = target_lags_step[0] - target_lags_step[1] if len(target_lags_step) > 1 else 0.0
-                co2_oni_interaction = exog_step[0] * exog_step[2]
+                for idx, year in enumerate(future_years):
+                    d_lags_step = np.array(sim_delta_tracker[-lag_k:])[::-1]
+                    t_lags_step = np.array(sim_temp_tracker[-lag_k:])[::-1]
+                    p_lags_step = ((np.array(sim_precip_tracker[-lag_k:]) - p_mean_full) / p_std_full)[::-1]
 
-                feat_step = np.concatenate([
-                    target_lags_step, 
-                    precip_lags_step, 
-                    [roll_mean_3, roll_mean_5, roll_var_3, roll_var_5, exp_max, exp_min, target_diff_1, co2_oni_interaction, yr_norm, sin_yr, cos_yr],
-                    exog_step
-                ]).reshape(1, -1)
+                    exog_step = exog_future[idx]
+                    yr_norm = (year - 1960.0) / 60.0
+                    sin_3 = np.sin(2 * np.pi * year / 3.0)
+                    cos_3 = np.cos(2 * np.pi * year / 3.0)
+                    sin_5 = np.sin(2 * np.pi * year / 5.0)
+                    cos_5 = np.cos(2 * np.pi * year / 5.0)
+                    sin_7 = np.sin(2 * np.pi * year / 7.0)
+                    cos_7 = np.cos(2 * np.pi * year / 7.0)
 
-                if best_m == 'linear':
-                    r_m = float(m_lin_full.predict(feat_step)[0])
-                elif best_m == 'rf':
-                    r_m = float(m_rf_full.predict(feat_step)[0])
-                elif best_m == 'xgb':
-                    r_m = float(m_xgb_full.predict(feat_step)[0])
-                else: # Ensemble
-                    r_m = float(0.4 * m_lin_full.predict(feat_step)[0] + 0.3 * m_rf_full.predict(feat_step)[0] + 0.3 * m_xgb_full.predict(feat_step)[0])
+                    roll_std_3 = np.std(d_lags_step[:3]) if len(d_lags_step) >= 3 else np.std(d_lags_step)
+                    roll_std_5 = np.std(d_lags_step[:5]) if len(d_lags_step) >= 5 else np.std(d_lags_step)
+                    roll_mean_3 = np.mean(d_lags_step[:3]) if len(d_lags_step) >= 3 else np.mean(d_lags_step)
+                    roll_mean_5 = np.mean(d_lags_step[:5]) if len(d_lags_step) >= 5 else np.mean(d_lags_step)
 
-                r_l = float(model_lower.predict(feat_step)[0])
-                r_u = float(model_upper.predict(feat_step)[0])
+                    feat_step = np.concatenate([
+                        d_lags_step,
+                        t_lags_step,
+                        p_lags_step,
+                        [roll_std_3, roll_std_5, roll_mean_3, roll_mean_5],
+                        [sin_3, cos_3, sin_5, cos_5, sin_7, cos_7, yr_norm],
+                        exog_step
+                    ]).reshape(1, -1)
 
-                m = trend_future_pred[idx] + r_m
-                l = trend_future_pred[idx] + r_l
-                u = trend_future_pred[idx] + r_u
+                    if best_m == 'xgb':
+                        pred_d = float(m_xgb_full.predict(feat_step)[0])
+                    elif best_m == 'lgb':
+                        pred_d = float(m_lgb_full.predict(feat_step)[0])
+                    elif best_m == 'rf':
+                        pred_d = float(m_rf_full.predict(feat_step)[0])
+                    else: # Ensemble
+                        pred_d = float(0.4 * m_xgb_full.predict(feat_step)[0] + 0.4 * m_lgb_full.predict(feat_step)[0] + 0.2 * m_rf_full.predict(feat_step)[0])
 
-                # Enforce physical sanity constraints
-                l = min(l, m - 0.2)
-                u = max(u, m + 0.2)
+                    # Sample residual error for stochastic Monte Carlo trajectory (skip noise for sim==0 main mean)
+                    noise = rng.choice(residuals_dist) if sim > 0 else 0.0
+                    sim_d = pred_d + noise
 
-                forecast_mean.append(round(m, 2))
-                forecast_lower.append(round(l, 2))
-                forecast_upper.append(round(u, 2))
+                    # Reconstruct absolute temperature sequence: T(t) = T(t-1) + Delta_T
+                    new_temp = sim_temp_tracker[-1] + sim_d
+                    sim_temp_path.append(new_temp)
 
-                res_hist_tracker.append(r_m)
-                p_hist_tracker.append(float(np.mean(p_hist_tracker[-5:])))
+                    sim_delta_tracker.append(sim_d)
+                    sim_temp_tracker.append(new_temp)
+                    sim_precip_tracker.append(float(np.mean(sim_precip_tracker[-5:])))
+
+                all_sim_paths.append(sim_temp_path)
+
+            all_sim_paths = np.array(all_sim_paths) # Shape: (200, 20)
+
+            # Extract Mean, 5th percentile, 95th percentile across Monte Carlo runs
+            forecast_mean = [round(float(v), 2) for v in all_sim_paths[0]]
+            forecast_lower = [round(float(v), 2) for v in np.percentile(all_sim_paths, 5, axis=0)]
+            forecast_upper = [round(float(v), 2) for v in np.percentile(all_sim_paths, 95, axis=0)]
 
             loc_results[f'forecast_{target_name}_mean'] = forecast_mean
             loc_results[f'forecast_{target_name}_lower'] = forecast_lower
@@ -374,7 +383,8 @@ def run_tabular_ml_pipeline():
                     'fut_years': future_years,
                     'fut_mean': forecast_mean,
                     'fut_lower': forecast_lower,
-                    'fut_upper': forecast_upper
+                    'fut_upper': forecast_upper,
+                    'sim_paths': all_sim_paths[1:10] # Save 10 paths for multi-line plotting
                 }
 
         metrics[loc] = loc_results
@@ -384,11 +394,11 @@ def run_tabular_ml_pipeline():
     with open('ml_metrics.json', 'w') as f:
         json.dump(metrics, f, indent=2)
 
-    # Generate Evaluation Plot if Matplotlib is available
+    # Generate Evaluation Plot showing Non-Linear Peaks & Troughs
     if HAS_MATPLOTLIB and 'max' in plot_data_national:
-        print("\nGenerating Holdout & Forecast Evaluation Plot (ml_forecast_evaluation.png)...")
+        print("\nGenerating Differenced Target & Monte Carlo Evaluation Plot (ml_forecast_evaluation.png)...")
         fig, axes = plt.subplots(3, 1, figsize=(12, 10), sharex=True)
-        fig.suptitle('Pakistan National Climate Metrics: Detrended ML Forecasts & 95% Prediction Intervals', fontsize=14, fontweight='bold')
+        fig.suptitle('Pakistan National Climate Forecasts: Differenced Target Model & Monte Carlo 95% Confidence Bounds', fontsize=14, fontweight='bold')
 
         targets_info = [('max', 'National Max Temperature (°C)', '#ef4444'), ('min', 'National Min Temperature (°C)', '#3b82f6'), ('peak', 'National Peak Extreme Max Temperature (°C)', '#f97316')]
 
@@ -397,8 +407,13 @@ def run_tabular_ml_pipeline():
             if t_key in plot_data_national:
                 d = plot_data_national[t_key]
                 ax.plot(d['hist_years'], d['hist_actual'], color=color, linewidth=2, label='Historical Actuals')
-                ax.plot(d['fut_years'], d['fut_mean'], color=color, linestyle='--', linewidth=2, label='ML Ensemble Forecast')
-                ax.fill_between(d['fut_years'], d['fut_lower'], d['fut_upper'], color=color, alpha=0.2, label='95% Prediction Interval')
+                ax.plot(d['fut_years'], d['fut_mean'], color=color, linestyle='--', linewidth=2, marker='o', markersize=4, label='Differenced ML Forecast (XGB + LGBM)')
+                
+                # Plot sample Monte Carlo trajectory paths to demonstrate non-linear peaks and troughs
+                for sim_idx, sim_p in enumerate(d['sim_paths']):
+                    ax.plot(d['fut_years'], sim_p, color=color, alpha=0.15, linewidth=1.0)
+                    
+                ax.fill_between(d['fut_years'], d['fut_lower'], d['fut_upper'], color=color, alpha=0.2, label='95% Monte Carlo Confidence Bound')
                 ax.axvline(x=2017.5, color='#64748b', linestyle=':', label='Forecast Horizon (2018)')
                 ax.set_ylabel(label, fontsize=10)
                 ax.grid(True, linestyle='--', alpha=0.5)
@@ -408,9 +423,9 @@ def run_tabular_ml_pipeline():
         plt.tight_layout()
         plt.savefig('ml_forecast_evaluation.png', dpi=300)
         plt.close()
-        print("Saved evaluation plot to ml_forecast_evaluation.png successfully.")
+        print("Saved differenced target evaluation plot to ml_forecast_evaluation.png successfully.")
 
-    print("\nCompleted Detrended ML Climate Forecasting Pipeline. Saved metrics to ml_metrics.json.")
+    print("\nCompleted Differenced ML Climate Forecasting Pipeline. Saved metrics to ml_metrics.json.")
 
 if __name__ == '__main__':
     run_tabular_ml_pipeline()
