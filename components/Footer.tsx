@@ -45,7 +45,7 @@ export default function Footer() {
                   <span>Subscribed to research updates.</span>
                 </div>
               ) : (
-                <form onSubmit={handleSubscribe} className="flex items-center gap-2 max-w-sm">
+                <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 max-w-sm">
                   <input
                     type="email"
                     value={email}
@@ -56,7 +56,7 @@ export default function Footer() {
                   />
                   <button
                     type="submit"
-                    className="px-3.5 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg text-xs font-semibold transition-colors shrink-0 shadow-sm"
+                    className="px-3.5 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg text-xs font-semibold transition-colors shrink-0 shadow-sm text-center"
                   >
                     Subscribe
                   </button>
@@ -110,11 +110,11 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-500 text-[11px]">
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-500 text-[11px] text-center sm:text-left">
           <div>
             © {new Date().getFullYear()} Pakistan Climate Change & Temperature Research Observatory.
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 sm:gap-4">
             <Link href="/about" className="hover:text-slate-900 dark:hover:text-slate-300">Data Terms</Link>
             <Link href="/solutions" className="hover:text-slate-900 dark:hover:text-slate-300">Methodology Documentation</Link>
             <Link href="/contact" className="hover:text-slate-900 dark:hover:text-slate-300">Data Request</Link>

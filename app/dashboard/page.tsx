@@ -357,64 +357,64 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 font-sans pt-28 pb-16 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 font-sans pt-24 sm:pt-28 pb-16 px-3.5 sm:px-6 lg:px-8 transition-colors duration-200">
+      <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
 
         {/* Top Context Navigation Bar */}
-        <div className="flex items-center justify-between bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 p-3 px-5 rounded-2xl shadow-sm backdrop-blur-xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 p-3 px-4 sm:px-5 rounded-2xl shadow-sm backdrop-blur-xl">
           <Link href="/" className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
             <ArrowLeft className="w-4 h-4" />
             <span>Return to Overview</span>
           </Link>
 
-          <div className="flex items-center gap-3 text-xs font-mono">
-            <span className="px-2.5 py-1 rounded-md bg-orange-500/10 dark:bg-orange-950/60 border border-orange-500/30 dark:border-orange-800/60 text-orange-600 dark:text-orange-400 flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs font-mono">
+            <span className="px-2.5 py-1 rounded-md bg-orange-500/10 dark:bg-orange-950/60 border border-orange-500/30 dark:border-orange-800/60 text-orange-600 dark:text-orange-400 flex items-center gap-1.5 text-[11px] sm:text-xs">
               <Zap className="w-3 h-3" />
               <span>DATASET ARCHIVE: 1961 – 2037</span>
             </span>
             <span className="hidden sm:inline text-slate-400">|</span>
-            <span className="hidden sm:inline text-slate-600 dark:text-slate-400">MODELS: LightGBM / XGBoost</span>
+            <span className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400">MODELS: LightGBM / XGBoost</span>
           </div>
         </div>
 
         {/* Header Section */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-slate-200 dark:border-slate-800/80 pb-6">
+        <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 border-b border-slate-200 dark:border-slate-800/80 pb-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-mono text-cyan-700 dark:text-cyan-400 mb-2 shadow-sm">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[11px] sm:text-xs font-mono text-cyan-700 dark:text-cyan-400 mb-2 shadow-sm">
               <Globe className="w-3.5 h-3.5" />
               <span>PAKISTAN METEOROLOGICAL OBSERVATORY</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               Climate & Temperature Analytics Dashboard
             </h1>
-            <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
+            <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm mt-1">
               Historical meteorological telemetry & machine learning predictions for Pakistan (1961 – 2037)
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-4">
-            <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm flex items-center gap-4">
-              <div className="bg-orange-500/10 p-3 rounded-xl border border-orange-500/20">
-                <Thermometer className="text-orange-600 dark:text-orange-400" size={24} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full lg:w-auto">
+            <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 p-3.5 sm:p-4 rounded-2xl shadow-sm flex items-center gap-3.5">
+              <div className="bg-orange-500/10 p-2.5 sm:p-3 rounded-xl border border-orange-500/20 shrink-0">
+                <Thermometer className="text-orange-600 dark:text-orange-400 w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono font-medium uppercase tracking-wider">Extreme Peak Trend</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
+                <p className="text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 font-mono font-medium uppercase tracking-wider">Extreme Peak Trend</p>
+                <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                   {(metrics.peakTrendPerDecade ?? 0) > 0 ? '+' : ''}{metrics.peakTrendPerDecade ?? 0.171}°C
-                  <span className="text-xs font-normal text-slate-500"> / decade</span>
+                  <span className="text-xs font-normal text-slate-500"> / dec</span>
                 </p>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm flex items-center gap-4">
-              <div className="bg-rose-500/10 p-3 rounded-xl border border-rose-500/20">
-                <TrendingUp className="text-rose-600 dark:text-rose-400" size={24} />
+            <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 p-3.5 sm:p-4 rounded-2xl shadow-sm flex items-center gap-3.5">
+              <div className="bg-rose-500/10 p-2.5 sm:p-3 rounded-xl border border-rose-500/20 shrink-0">
+                <TrendingUp className="text-rose-600 dark:text-rose-400 w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono font-medium uppercase tracking-wider">Historical Max Trend</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
+                <p className="text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 font-mono font-medium uppercase tracking-wider">Historical Max Trend</p>
+                <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                   {dynamicMaxTrendDecade > 0 ? '+' : ''}{dynamicMaxTrendDecade}°C
-                  <span className="text-xs font-normal text-slate-500"> / decade</span>
+                  <span className="text-xs font-normal text-slate-500"> / dec</span>
                 </p>
               </div>
             </div>
@@ -422,14 +422,14 @@ export default function DashboardPage() {
         </header>
 
         {/* Control Bar: Location & Tabs */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+        <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-3.5 w-full">
           {/* Location Selector */}
-          <div className="flex items-center gap-3 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 p-2 rounded-xl shadow-sm">
-            <label className="text-slate-600 dark:text-slate-400 font-mono text-xs px-2">WEATHER STATIONS:</label>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 p-2 rounded-xl shadow-sm">
+            <label className="text-slate-600 dark:text-slate-400 font-mono text-[11px] sm:text-xs px-2 shrink-0">WEATHER STATIONS:</label>
             <select
               value={selectedLocation}
               onChange={(e) => setSelectedLocation(e.target.value)}
-              className="bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs rounded-lg focus:ring-orange-500 focus:border-orange-500 block p-2 font-bold"
+              className="bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs rounded-lg focus:ring-orange-500 focus:border-orange-500 block p-2 font-bold w-full sm:w-auto"
             >
               {locations.map((loc: string) => (
                 <option key={loc} value={loc}>{loc === 'National' ? 'National Average (Pakistan)' : loc}</option>
@@ -438,22 +438,22 @@ export default function DashboardPage() {
           </div>
 
           {/* Tab Navigation */}
-          <div className="flex flex-wrap gap-2 p-1.5 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 p-1.5 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
             <button
               onClick={() => setActiveTab('historical')}
-              className={`px-4 py-2 rounded-lg transition-all text-xs font-semibold ${activeTab === 'historical' ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/30' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}
+              className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg transition-all text-xs font-semibold text-center ${activeTab === 'historical' ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/30' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}
             >
               Historical Trends (1961-2017)
             </button>
             <button
               onClick={() => setActiveTab('anomalies')}
-              className={`px-4 py-2 rounded-lg transition-all text-xs font-semibold ${activeTab === 'anomalies' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}
+              className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg transition-all text-xs font-semibold text-center ${activeTab === 'anomalies' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}
             >
               Temperature Anomalies
             </button>
             <button
               onClick={() => setActiveTab('forecast')}
-              className={`px-4 py-2 rounded-lg transition-all text-xs font-semibold ${activeTab === 'forecast' ? 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-500/30' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}
+              className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg transition-all text-xs font-semibold text-center ${activeTab === 'forecast' ? 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-500/30' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}
             >
               ML Forecast (2017-2037)
             </button>
@@ -461,7 +461,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Map Integration */}
-        <section className="relative w-full h-[420px] border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden bg-white dark:bg-slate-900/60 shadow-xl">
+        <section className="relative w-full h-[360px] sm:h-[420px] lg:h-[460px] border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden bg-white dark:bg-slate-900/60 shadow-xl">
           <PakistanMap
             selectedLocation={selectedLocation}
             setSelectedLocation={setSelectedLocation}
@@ -469,10 +469,10 @@ export default function DashboardPage() {
         </section>
 
         {/* Content Area */}
-        <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <main className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
 
           {/* Main Chart Area */}
-          <div className="lg:col-span-2 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-md h-[540px]">
+          <div className="lg:col-span-2 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 sm:p-6 shadow-md min-h-[460px] sm:min-h-[500px] md:h-[540px] flex flex-col justify-between">
 
             {/* TAB 1: Historical Trends */}
             {activeTab === 'historical' && (
